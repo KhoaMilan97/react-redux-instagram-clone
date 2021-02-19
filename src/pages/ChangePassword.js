@@ -53,7 +53,7 @@ const schema = yup.object().shape({
 
 function ChangePassword() {
   const classes = useStyles();
-  const { user, loading } = useSelector((state) => state);
+  const { auth, loading } = useSelector((state) => state);
   const [showPass, setShowPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmNewPass, setShowConfirmNewPass] = useState(false);
@@ -83,7 +83,7 @@ function ChangePassword() {
       payload: true,
     });
 
-    checkOldPassword(user.user.email, password)
+    checkOldPassword(auth.user.email, password)
       .then((res) => {
         if (res.data.ok) {
           setChangePassCount(changePassCount + 1);
@@ -108,7 +108,7 @@ function ChangePassword() {
       const handleReset = async () => {
         try {
           if (values.newpassword) {
-            const res = await resetPassword(values.newpassword, user.token);
+            const res = await resetPassword(values.newpassword, auth.token);
             dispatch({
               type: actionTypes.LOADING,
               payload: false,
@@ -126,7 +126,7 @@ function ChangePassword() {
 
       handleReset();
     }
-  }, [changePassCount, values.newpassword, dispatch, user.token, reset]);
+  }, [changePassCount, values.newpassword, dispatch, auth.token, reset]);
 
   return (
     <div className={classes.root}>
@@ -135,7 +135,15 @@ function ChangePassword() {
         <Grid container justify="space-around" spacing={4}>
           <Grid item container alignItems="center">
             <Grid item xs={4}>
-              <Avatar className={classes.left} />
+              {auth.user.avatar?.url ? (
+                <Avatar
+                  alt="profile picture"
+                  src={auth.user.avatar?.url}
+                  className={classes.left}
+                />
+              ) : (
+                <Avatar alt="profile picture" className={classes.left} />
+              )}
             </Grid>
             <Grid item xs={8}>
               <Typography className={classes.right}>khoamilan1233</Typography>

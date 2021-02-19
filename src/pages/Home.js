@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
   name: {
     color: "#262626",
     fontWeight: 600,
+    width: "100%",
     display: "block",
   },
 }));
@@ -48,10 +49,11 @@ const Home = () => {
   return (
     <>
       <Container maxWidth="md">
-        <Grid container>
+        <Grid container justify="center">
           <Grid
             item
             md={8}
+            sm={10}
             xs={12}
             style={{ paddingRight: matchesSM ? 0 : 30 }}
           >
@@ -72,14 +74,13 @@ const Home = () => {
                     <Typography className={classes.name} variant="body2">
                       khoamilan
                     </Typography>
-
                     <Typography style={{ color: "#8e8e8e" }}>
                       Khoa Milan
                     </Typography>
                   </Grid>
-                  <Grid item container alignItems="center" md>
+                  {/* <Grid item container alignItems="center" md>
                     <MuiLink className={classes.link}>Switch</MuiLink>
-                  </Grid>
+                  </Grid> */}
                 </Grid>
                 <Grid
                   item

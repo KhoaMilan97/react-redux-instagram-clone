@@ -9,4 +9,5 @@ export const actionTypes = {
   LOADING: "LOADING",
   CHECK_CURRENT_USER: "CHECK_CURRENT_USER",
   UPDATE_USER: "UPDATE_USER",
+  GET_USER: "GET_USER",
 };

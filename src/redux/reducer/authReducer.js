@@ -6,7 +6,7 @@ const initialState = {
   user: {},
 };
 
-const userReducer = (state = initialState, action) => {
+const authReducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.LOGIN_SUCCESS:
     case actionTypes.REGISTER_SUCCESS:
@@ -27,6 +27,11 @@ const userReducer = (state = initialState, action) => {
         ...state,
         user: action.payload.user,
       };
+    case actionTypes.GET_USER:
+      return {
+        ...state,
+        user: action.payload,
+      };
     case actionTypes.LOGIN_FAIL:
     case actionTypes.LOGOUT:
     case actionTypes.REGISTER_FAIL:
@@ -42,4 +47,4 @@ const userReducer = (state = initialState, action) => {
   }
 };
 
-export default userReducer;
+export default authReducer;

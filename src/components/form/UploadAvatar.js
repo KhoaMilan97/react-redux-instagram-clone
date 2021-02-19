@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function UploadAvatar({ center, setImageLoading }) {
   const classes = useStyles();
-  const { token, user } = useSelector((state) => state.user);
+  const { token, user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   const fileUploadAndResize = (e) => {

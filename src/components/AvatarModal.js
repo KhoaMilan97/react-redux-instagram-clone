@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import PropTypes from "prop-types";
+import React from "react";
+
 import { useSelector, useDispatch } from "react-redux";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -37,14 +37,10 @@ function SimpleDialog(props) {
   const classes = useStyles();
   const { onClose, open, setImageLoading } = props;
 
-  const { user, token } = useSelector((state) => state.user);
+  const { user, token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   const handleClose = () => {
-    onClose();
-  };
-
-  const handleListItemClick = () => {
     onClose();
   };
 
@@ -94,11 +90,6 @@ function SimpleDialog(props) {
     </Dialog>
   );
 }
-
-SimpleDialog.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  open: PropTypes.bool.isRequired,
-};
 
 export default function AvatarModal({ setImageLoading }) {
   const [open, setOpen] = React.useState(false);

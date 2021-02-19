@@ -1,9 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
-// import { yupResolver } from "@hookform/resolvers/yup";
-// import * as yup from "yup";
 
 import { makeStyles } from "@material-ui/core/styles";
 import {
@@ -52,8 +49,8 @@ const useStyles = makeStyles((theme) => ({
 
 function EditProfile() {
   const classes = useStyles();
-  const { user, loading } = useSelector((state) => state.user);
-  const { control, handleSubmit, errors, getValues, reset } = useForm();
+  const { user, loading } = useSelector((state) => state.auth);
+  const { control, handleSubmit } = useForm();
   const [imageLoading, setImageLoading] = useState(false);
 
   const onSubmit = (data) => {
@@ -69,13 +66,19 @@ function EditProfile() {
             <Grid item xs={4}>
               {imageLoading ? (
                 <CircularProgress className={classes.circularProgress} />
+              ) : user.avatar?.url ? (
+                <Avatar
+                  alt="profile picture"
+                  src={user.avatar?.url}
+                  className={classes.left}
+                />
               ) : (
-                <Avatar src={user?.avatar.url} className={classes.left} />
+                <Avatar alt="profile picture" className={classes.left} />
               )}
             </Grid>
             <Grid item xs={8}>
               <Typography>khoamilan1233</Typography>
-              {user.avatar.url ? (
+              {user.avatar?.url ? (
                 <AvatarModal setImageLoading={setImageLoading} />
               ) : (
                 <UploadAvatar setImageLoading={setImageLoading} />
@@ -89,13 +92,12 @@ function EditProfile() {
             <Grid item xs={8}>
               <Controller
                 as={TextField}
-                defaultValue=""
-                name="name"
+                name="fullname"
+                defaultValue={user.fullname ? user.fullname : ""}
                 fullWidth
                 label="Name"
                 variant="outlined"
                 size="small"
-                helperText="Help people discover your account by using the name you're known by: either your full name, nickname, or business name."
                 control={control}
               />
             </Grid>
@@ -108,9 +110,9 @@ function EditProfile() {
             <Grid item xs={8}>
               <Controller
                 as={TextField}
-                defaultValue=""
                 name="username"
                 fullWidth
+                defaultValue={user.username ? user.username : ""}
                 label="Username"
                 variant="outlined"
                 size="small"
@@ -125,12 +127,33 @@ function EditProfile() {
             <Grid item xs={8}>
               <Controller
                 as={TextField}
-                defaultValue=""
+                defaultValue={user.website ? user.website : ""}
                 name="website"
+                type="url"
                 fullWidth
                 label="Website"
                 variant="outlined"
                 size="small"
+                control={control}
+              />
+            </Grid>
+          </Grid>
+
+          <Grid item container alignItems="center">
+            <Grid item xs={4}>
+              <Typography className={classes.left}>Description</Typography>
+            </Grid>
+            <Grid item xs={8}>
+              <Controller
+                as={TextField}
+                defaultValue={user.description ? user.description : ""}
+                name="description"
+                fullWidth
+                label="Description"
+                variant="outlined"
+                size="small"
+                multiline
+                rows={4}
                 control={control}
               />
             </Grid>
@@ -143,7 +166,7 @@ function EditProfile() {
             <Grid item xs={8}>
               <Controller
                 as={TextField}
-                defaultValue=""
+                defaultValue={user.email ? user.email : ""}
                 name="email"
                 fullWidth
                 label="Email"
@@ -162,7 +185,7 @@ function EditProfile() {
             <Grid item xs={8}>
               <Controller
                 as={TextField}
-                defaultValue=""
+                defaultValue={user.phoneNumber ? user.phoneNumber : ""}
                 name="phone"
                 fullWidth
                 label="Phone Number"
@@ -185,7 +208,7 @@ function EditProfile() {
                 <Controller
                   name="gender"
                   control={control}
-                  defaultValue="female"
+                  defaultValue={user.gender ? user.gender : "female"}
                   as={
                     <RadioGroup row aria-label="gender">
                       <FormControlLabel

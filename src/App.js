@@ -2,14 +2,10 @@ import { Route, Switch, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import Backdrop from "@material-ui/core/Backdrop";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import { makeStyles } from "@material-ui/core/styles";
-
 import SignUp from "./pages/SignUp";
-import Footer from "./components/ui/Footer";
+import Footer from "./components/Footer";
 import SignIn from "./pages/SignIn";
-import Header from "./components/ui/Header";
+import Header from "./components/header/Header";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -22,13 +18,7 @@ import { getAccessToken } from "./functions/auth";
 import { checkCurrentUser } from "./redux/actions/authAction";
 import NotFound from "./pages/NotFound";
 import Accounts from "./pages/Accounts";
-
-const useStyles = makeStyles((theme) => ({
-  backdrop: {
-    zIndex: theme.zIndex.drawer + 1,
-    color: "#fff",
-  },
-}));
+import InstaLoading from "./components/loading/InstaLoading";
 
 function App() {
   const { pathname } = useLocation();
@@ -40,9 +30,8 @@ function App() {
     pathname.includes("/reset-password/");
 
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user);
+  const auth = useSelector((state) => state.auth);
   const [pending, setPending] = useState(true);
-  const classes = useStyles();
 
   useEffect(() => {
     const firstLogin = localStorage.getItem("firstLogin");
@@ -61,14 +50,9 @@ function App() {
     } else {
       setPending(false);
     }
-  }, [user.isLoggedIn, dispatch]);
+  }, [auth.isLoggedIn, dispatch]);
 
-  if (pending)
-    return (
-      <Backdrop className={classes.backdrop} open={pending}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
-    );
+  if (pending) return <InstaLoading />;
 
   return (
     <>

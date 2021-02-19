@@ -10,17 +10,22 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     backgroundColor: "#fff",
   },
+  icon: {
+    width: 70,
+    height: 70,
+    color: "#ccc",
+  },
 }));
 
-const Loading = () => {
+const InstaLoading = () => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
       <div className="main">
-        <InstagramIcon />
+        <InstagramIcon className={classes.icon} />
       </div>
     </div>
   );
 };
 
-export default Loading;
+export default InstaLoading;
