@@ -19,6 +19,9 @@ import { checkCurrentUser } from "./redux/actions/authAction";
 import NotFound from "./pages/NotFound";
 import Accounts from "./pages/Accounts";
 import InstaLoading from "./components/loading/InstaLoading";
+import Messages from "./pages/Messages";
+import Explore from "./pages/Explore";
+import Notifications from "./pages/Notifications";
 
 function App() {
   const { pathname } = useLocation();
@@ -73,7 +76,9 @@ function App() {
           component={ResetPassword}
         />
         <PrivateRoute path="/accounts" component={Accounts} />
-
+        <PrivateRoute path="/messages" component={Messages} />
+        <PrivateRoute path="/explore" component={Explore} />
+        <PrivateRoute path="/notifications" component={Notifications} />
         <PrivateRoute sensitive exact path="/:username" component={Profile} />
         <PrivateRoute sensitive exact path="/" component={Home} />
 

@@ -18,7 +18,7 @@ import {
 
 import Message from "../utils/Message";
 import UploadAvatar from "../components/form/UploadAvatar";
-import AvatarModal from "../components/AvatarModal";
+import AvatarModal from "../components/modal/AvatarModal";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -77,7 +77,7 @@ function EditProfile() {
               )}
             </Grid>
             <Grid item xs={8}>
-              <Typography>khoamilan1233</Typography>
+              <Typography>{user.username}</Typography>
               {user.avatar?.url ? (
                 <AvatarModal setImageLoading={setImageLoading} />
               ) : (

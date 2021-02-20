@@ -137,7 +137,7 @@ function Search() {
               {user.avatar?.url ? (
                 <Avatar alt="profile picture" src={user.avatar?.url} />
               ) : (
-                <Avatar />
+                <Avatar alt="profile picture" />
               )}
             </ListItemIcon>
             <ListItemText primary={user.username} secondary={user.fullname} />

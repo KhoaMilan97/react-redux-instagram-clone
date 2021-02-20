@@ -17,11 +17,15 @@ import BookmarkBorderOutlinedIcon from "@material-ui/icons/BookmarkBorderOutline
 import LocalOfferIcon from "@material-ui/icons/LocalOffer";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
+import PersonIcon from "@material-ui/icons/Person";
+import DoneIcon from "@material-ui/icons/Done";
 
 import NotFound from "../pages/NotFound";
 import { getUser, followUser, unfollowUser } from "../functions/user";
 import Spinner from "../components/loading/Spinner";
 import { actionTypes } from "../redux/actions/actionType";
+import PostGallerry from "./profile/PostGallerry";
+import FollowModal from "../components/modal/FollowModal";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -44,6 +48,12 @@ const useStyles = makeStyles((theme) => ({
   },
   tab: {
     color: "#8e8e8e",
+    "@media (min-width: 500px)": {
+      minWidth: "110px",
+    },
+    "@media (min-width: 700px)": {
+      minWidth: "160px",
+    },
   },
   button: {
     minWidth: "100px",
@@ -62,19 +72,25 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Profile() {
-  const classes = useStyles();
-  const [value, setValue] = React.useState(0);
-  const { username } = useParams();
+  const [value, setValue] = useState(0);
   const [user, setUser] = useState("");
   const [loading, setLoading] = useState(true);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const classes = useStyles();
+  const { username } = useParams();
   const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const [followLoading, setFollowLoading] = useState(false);
   const theme = useTheme();
   const matchesSM = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+  };
+
+  const handleClickOpen = () => {
+    setOpen(true);
   };
 
   useEffect(() => {
@@ -152,16 +168,21 @@ function Profile() {
       if (checkUserIsFollow(user._id)) {
         return (
           <Button
-            color="secondary"
-            variant="contained"
+            variant="outlined"
             style={{ marginLeft: 10 }}
-            onClick={handleUnFollowAction}
+            onClick={handleClickOpen}
             className={classes.button}
           >
             {followLoading ? (
-              <CircularProgress className={classes.circularProgress} />
+              <CircularProgress
+                style={{ color: "black" }}
+                className={classes.circularProgress}
+              />
             ) : (
-              "Un Follow"
+              <>
+                <PersonIcon />
+                <DoneIcon />
+              </>
             )}
           </Button>
         );
@@ -203,6 +224,12 @@ function Profile() {
           <Typography className={classes.name}>
             {user.username} {renderAction()}
           </Typography>
+          <FollowModal
+            user={user}
+            open={open}
+            setOpen={setOpen}
+            handleUnFollowAction={handleUnFollowAction}
+          />
 
           <Grid container style={{ marginTop: 10 }}>
             <Grid item>
@@ -251,6 +278,7 @@ function Profile() {
             />
 
             <Tab
+              className={classes.tab}
               label={
                 <div>
                   <MovieIcon
@@ -261,6 +289,7 @@ function Profile() {
               }
             />
             <Tab
+              className={classes.tab}
               label={
                 <div>
                   <BookmarkBorderOutlinedIcon
@@ -271,6 +300,7 @@ function Profile() {
               }
             />
             <Tab
+              className={classes.tab}
               label={
                 <div>
                   <LocalOfferIcon
@@ -282,6 +312,7 @@ function Profile() {
             />
           </Tabs>
         </Paper>
+        <PostGallerry />
       </Grid>
     </Container>
   );

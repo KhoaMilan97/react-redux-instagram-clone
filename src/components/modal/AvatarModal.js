@@ -13,9 +13,9 @@ import Dialog from "@material-ui/core/Dialog";
 import { blue } from "@material-ui/core/colors";
 import { Divider } from "@material-ui/core";
 
-import UploadAvatar from "./form/UploadAvatar";
-import { removeAvatars } from "../functions/upload";
-import { actionTypes } from "../redux/actions/actionType";
+import UploadAvatar from "../form/UploadAvatar";
+import { removeAvatars } from "../../functions/upload";
+import { actionTypes } from "../../redux/actions/actionType";
 
 const useStyles = makeStyles({
   avatar: {

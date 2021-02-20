@@ -1,5 +1,5 @@
-import React from "react";
-import { Link, useHistory } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -8,22 +8,27 @@ import Toolbar from "@material-ui/core/Toolbar";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import MenuItem from "@material-ui/core/MenuItem";
-import AccountCircle from "@material-ui/icons/AccountCircle";
-import EmailOutlinedIcon from "@material-ui/icons/EmailOutlined";
-import ExploreOutlinedIcon from "@material-ui/icons/ExploreOutlined";
-import HomeSharpIcon from "@material-ui/icons/HomeSharp";
-import FavoriteBorderOutlinedIcon from "@material-ui/icons/FavoriteBorderOutlined";
 import Divider from "@material-ui/core/Divider";
 import Avatar from "@material-ui/core/Avatar";
-import BookmarkBorderIcon from "@material-ui/icons/BookmarkBorder";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import SettingsIcon from "@material-ui/icons/Settings";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import Grow from "@material-ui/core/Grow";
 import Paper from "@material-ui/core/Paper";
 import Popper from "@material-ui/core/Popper";
 import MenuList from "@material-ui/core/MenuList";
+
+import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
+import AccountCircle from "@material-ui/icons/AccountCircle";
+import EmailOutlinedIcon from "@material-ui/icons/EmailOutlined";
+import ExploreOutlinedIcon from "@material-ui/icons/ExploreOutlined";
+import HomeSharpIcon from "@material-ui/icons/HomeSharp";
+import FavoriteBorderOutlinedIcon from "@material-ui/icons/FavoriteBorderOutlined";
+import BookmarkBorderIcon from "@material-ui/icons/BookmarkBorder";
+import SettingsIcon from "@material-ui/icons/Settings";
+import EmailIcon from "@material-ui/icons/Email";
+import ExploreIcon from "@material-ui/icons/Explore";
+import FavoriteIcon from "@material-ui/icons/Favorite";
 
 import { logout } from "../../functions/auth";
 import { logOutUser } from "../../redux/actions/authAction";
@@ -59,7 +64,7 @@ const useStyles = makeStyles((theme) => ({
 
   sectionDesktop: {
     display: "flex",
-    color: "#000",
+    color: "rgb(38, 38, 38) !important",
   },
 
   avatar: {
@@ -75,9 +80,55 @@ const Header = () => {
   const { user } = useSelector((state) => state.auth);
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef(null);
+  const location = useLocation();
+  const [active, setActive] = useState(0);
+
+  const routes = useMemo(
+    () => [
+      {
+        link: "/",
+        activeIndex: 1,
+        icon: () => <HomeOutlinedIcon />,
+        activeIcon: () => <HomeSharpIcon />,
+      },
+      {
+        link: "/messages",
+        activeIndex: 2,
+        icon: () => <EmailOutlinedIcon />,
+        activeIcon: () => <EmailIcon />,
+      },
+      {
+        link: "/explore",
+        activeIndex: 3,
+        icon: () => <ExploreOutlinedIcon />,
+        activeIcon: () => <ExploreIcon />,
+      },
+      {
+        link: "/notifications",
+        activeIndex: 4,
+        icon: () => <FavoriteBorderOutlinedIcon />,
+        activeIcon: () => <FavoriteIcon />,
+      },
+    ],
+    []
+  );
+
+  useEffect(() => {
+    routes.forEach((route) => {
+      switch (location.pathname) {
+        case `${route.link}`:
+          setActive(route.activeIndex);
+          break;
+
+        default:
+          break;
+      }
+    });
+  }, [location, routes]);
 
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
+    setActive(5);
   };
 
   const handleClose = (event) => {
@@ -193,19 +244,19 @@ const Header = () => {
           <Search />
           <div className={classes.grow} />
           <div className={classes.sectionDesktop}>
-            <IconButton component={Link} to="/" color="inherit">
-              <HomeSharpIcon />
-            </IconButton>
+            {routes.map((route) => (
+              <IconButton
+                key={route.activeIndex}
+                component={Link}
+                to={route.link}
+                color="inherit"
+              >
+                {route.activeIndex === active
+                  ? route.activeIcon()
+                  : route.icon()}
+              </IconButton>
+            ))}
 
-            <IconButton color="inherit">
-              <EmailOutlinedIcon />
-            </IconButton>
-            <IconButton color="inherit">
-              <ExploreOutlinedIcon />
-            </IconButton>
-            <IconButton color="inherit">
-              <FavoriteBorderOutlinedIcon />
-            </IconButton>
             <IconButton
               edge="end"
               aria-label="account of current user"
@@ -215,7 +266,11 @@ const Header = () => {
               onClick={handleToggle}
               color="inherit"
             >
-              {user.avatar?.url ? (
+              {user.avatar?.url &&
+              !(
+                Object.keys(user.avatar?.url).length === 0 &&
+                user.avatar?.url.constructor === Object
+              ) ? (
                 <Avatar
                   alt={user.username}
                   src={user.avatar?.url}

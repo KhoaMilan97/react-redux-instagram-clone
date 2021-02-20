@@ -146,7 +146,9 @@ function ChangePassword() {
               )}
             </Grid>
             <Grid item xs={8}>
-              <Typography className={classes.right}>khoamilan1233</Typography>
+              <Typography className={classes.right}>
+                {auth.user.username}
+              </Typography>
             </Grid>
           </Grid>
           <Grid item container alignItems="center">

@@ -19,12 +19,12 @@ export const theme = createMuiTheme({
         padding: "30px 0 30px 0",
       },
     },
-    MuiTab: {
-      root: {
-        "@media (min-width: 600px)": {
-          minWidth: "120px",
-        },
-      },
-    },
+    // MuiTab: {
+    //   root: {
+    //     "@media (min-width: 600px)": {
+    //       minWidth: "120px",
+    //     },
+    //   },
+    // },
   },
 });
