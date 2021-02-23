@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -16,10 +16,10 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import IconButton from "@material-ui/core/IconButton";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 
-import { registerAction } from "../redux/actions/authAction";
+import { loginUserAction } from "../../redux/actions/authAction";
+import Message from "../../utils/Message";
 
-import bgTitle from "../assets/img/32f0a4f27407.png";
-import Message from "../utils/Message";
+import bgTitle from "../../assets/img/32f0a4f27407.png";
 
 const useStyles = makeStyles((theme) => ({
   wrapper: {
@@ -54,24 +54,21 @@ const useStyles = makeStyles((theme) => ({
     height: 51,
     width: 175,
   },
-  subTitle: {
-    color: "#8e8e8e",
-    fontSize: 17,
-    fontWeight: 600,
-    marginBottom: 10,
-  },
-  paragraph: {
-    color: "#8e8e8e",
-    fontSize: 12,
-    margin: "10px 0",
-    textAlign: "center",
-  },
   link: {
     color: "#262626",
     "& a": {
       color: "#0095f6",
       textDecoration: "none",
     },
+  },
+  forgot: {
+    color: "#00376b",
+    fontSize: 12,
+    lineHeight: "14px",
+    marginTop: "20px",
+    textAlign: "center",
+    textDecoration: "none",
+    display: "block",
   },
   loading: {
     color: "white",
@@ -83,24 +80,24 @@ const schema = yup.object().shape({
     .string()
     .matches(/^(?:\d{10}|\w+@\w+\.\w{2,3})$/, "You need provide email")
     .required(),
-  fullname: yup.string().required().min(3),
-  username: yup.string().required().min(5),
   password: yup.string().required().min(8),
 });
 
-const SignUp = () => {
+const SignIn = () => {
   const classes = useStyles();
   const { control, handleSubmit, errors, formState } = useForm({
     mode: "all",
     resolver: yupResolver(schema),
   });
+
   const { isDirty, isValid } = formState;
+
   const dispatch = useDispatch();
   const loading = useSelector((state) => state.loading);
   const [showPass, setShowPass] = useState(false);
 
   const onSubmit = (data) => {
-    dispatch(registerAction(data));
+    dispatch(loginUserAction(data));
   };
 
   const handleClickShowPassword = () => {
@@ -118,10 +115,6 @@ const SignUp = () => {
           <Typography component="h1" variant="h4" className={classes.title}>
             Instagram
           </Typography>
-
-          <Typography component="h2" variant="h6" className={classes.subTitle}>
-            Sign up to see photos and videos from your friends.
-          </Typography>
           <Message />
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
@@ -137,32 +130,7 @@ const SignUp = () => {
               helperText={errors?.email?.message}
               control={control}
             />
-            <Controller
-              as={TextField}
-              defaultValue=""
-              name="fullname"
-              control={control}
-              className={classes.formControl}
-              error={!!errors.fullname}
-              helperText={errors?.fullname?.message}
-              fullWidth
-              label="Full Name"
-              variant="outlined"
-              size="small"
-            />
-            <Controller
-              as={TextField}
-              defaultValue=""
-              name="username"
-              control={control}
-              className={classes.formControl}
-              error={!!errors.username}
-              helperText={errors?.username?.message}
-              fullWidth
-              label="Username"
-              variant="outlined"
-              size="small"
-            />
+
             <Controller
               as={TextField}
               defaultValue=""
@@ -204,17 +172,12 @@ const SignUp = () => {
                 )
               }
             >
-              Sign up
+              Log In
             </Button>
+            <Link to="forgot-password" className={classes.forgot}>
+              Forgot password?
+            </Link>
           </form>
-          <Typography
-            component="p"
-            variant="body2"
-            className={classes.paragraph}
-          >
-            By signing up, you agree to our Terms , Data Policy and Cookies
-            Policy .
-          </Typography>
         </div>
       </Container>
       <Container className={classes.wrapper2}>
@@ -223,11 +186,11 @@ const SignUp = () => {
           className={classes.link}
           style={{ fontSize: "14px" }}
         >
-          Have an account? <Link to="/signin">Login</Link>
+          Don't have an account? <Link to="/signup">Sign up</Link>
         </Typography>
       </Container>
     </>
   );
 };
 
-export default SignUp;
+export default SignIn;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -16,10 +16,10 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import IconButton from "@material-ui/core/IconButton";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 
-import { loginUserAction } from "../redux/actions/authAction";
-import Message from "../utils/Message";
+import { resetPasswordAction } from "../../redux/actions/authAction";
+import Message from "../../utils/Message";
 
-import bgTitle from "../assets/img/32f0a4f27407.png";
+import bgTitle from "../../assets/img/32f0a4f27407.png";
 
 const useStyles = makeStyles((theme) => ({
   wrapper: {
@@ -32,7 +32,8 @@ const useStyles = makeStyles((theme) => ({
     boxSizing: "border-box",
   },
   wrapper2: {
-    marginTop: 20,
+    marginTop: 0,
+    borderTop: "0px",
     textAlign: "center",
     backgroundColor: "white",
     maxWidth: 350,
@@ -53,6 +54,12 @@ const useStyles = makeStyles((theme) => ({
     backgroundPosition: "0 -130px",
     height: 51,
     width: 175,
+  },
+  subTitle: {
+    color: "#8e8e8e",
+    fontSize: 14,
+    fontWeight: 300,
+    marginBottom: 10,
   },
   link: {
     color: "#262626",
@@ -76,28 +83,29 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const schema = yup.object().shape({
-  email: yup
+  password: yup.string().required().min(6),
+  confirmPassword: yup
     .string()
-    .matches(/^(?:\d{10}|\w+@\w+\.\w{2,3})$/, "You need provide email")
-    .required(),
-  password: yup.string().required().min(8),
+    .required()
+    .min(6)
+    .oneOf([yup.ref("password"), null], "Passwords must match"),
 });
 
-const SignIn = () => {
+const ResetPassword = () => {
   const classes = useStyles();
-  const { control, handleSubmit, errors, formState } = useForm({
-    mode: "all",
+  const { control, handleSubmit, errors } = useForm({
+    mode: "onBlur",
     resolver: yupResolver(schema),
   });
-
-  const { isDirty, isValid } = formState;
-
   const dispatch = useDispatch();
   const loading = useSelector((state) => state.loading);
   const [showPass, setShowPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const { token } = useParams();
 
   const onSubmit = (data) => {
-    dispatch(loginUserAction(data));
+    const { password } = data;
+    dispatch(resetPasswordAction(password, token));
   };
 
   const handleClickShowPassword = () => {
@@ -108,6 +116,14 @@ const SignIn = () => {
     event.preventDefault();
   };
 
+  const handleClickShowConfirmPassword = () => {
+    setShowConfirmPass(!showConfirmPass);
+  };
+
+  const handleMouseDownConfirmPassword = (event) => {
+    event.preventDefault();
+  };
+
   return (
     <>
       <Container maxWidth="xs" className={classes.wrapper}>
@@ -115,35 +131,24 @@ const SignIn = () => {
           <Typography component="h1" variant="h4" className={classes.title}>
             Instagram
           </Typography>
+          <Typography component="h2" variant="h6" className={classes.subTitle}>
+            Reset your password!
+          </Typography>
           <Message />
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
               as={TextField}
               defaultValue=""
-              name="email"
+              name="password"
               fullWidth
-              label="Email"
+              label="New Password"
               variant="outlined"
               size="small"
-              className={classes.formControl}
-              error={!!errors.email}
-              helperText={errors?.email?.message}
-              control={control}
-            />
-
-            <Controller
-              as={TextField}
-              defaultValue=""
-              name="password"
-              control={control}
+              type={showPass ? "text" : "password"}
               className={classes.formControl}
               error={!!errors.password}
               helperText={errors?.password?.message}
-              fullWidth
-              type={showPass ? "text" : "password"}
-              label="Password"
-              variant="outlined"
-              size="small"
+              control={control}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -158,12 +163,39 @@ const SignIn = () => {
                 ),
               }}
             />
+            <Controller
+              as={TextField}
+              defaultValue=""
+              name="confirmPassword"
+              fullWidth
+              label="Confirm New Password"
+              variant="outlined"
+              size="small"
+              type={showConfirmPass ? "text" : "password"}
+              className={classes.formControl}
+              error={!!errors.confirmPassword}
+              helperText={errors?.confirmPassword?.message}
+              control={control}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={handleClickShowConfirmPassword}
+                      onMouseDown={handleMouseDownConfirmPassword}
+                      style={{ padding: 0 }}
+                    >
+                      {showConfirmPass ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
               color="primary"
-              disabled={!isDirty || !isValid}
               endIcon={
                 loading ? (
                   <CircularProgress size={15} className={classes.loading} />
@@ -172,11 +204,8 @@ const SignIn = () => {
                 )
               }
             >
-              Log In
+              Send
             </Button>
-            <Link to="forgot-password" className={classes.forgot}>
-              Forgot password?
-            </Link>
           </form>
         </div>
       </Container>
@@ -186,11 +215,11 @@ const SignIn = () => {
           className={classes.link}
           style={{ fontSize: "14px" }}
         >
-          Don't have an account? <Link to="/signup">Sign up</Link>
+          <Link to="/signin">Skip</Link>
         </Typography>
       </Container>
     </>
   );
 };
 
-export default SignIn;
+export default ResetPassword;

@@ -1,9 +1,11 @@
 import React from "react";
+import { Link } from "react-router-dom";
+
 import { makeStyles } from "@material-ui/core/styles";
 import GridList from "@material-ui/core/GridList";
 import GridListTile from "@material-ui/core/GridListTile";
 import CollectionsIcon from "@material-ui/icons/Collections";
-import { GridListTileBar } from "@material-ui/core";
+import { GridListTileBar, Typography } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -24,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
     cursor: "pointer",
 
     [theme.breakpoints.down("sm")]: {
-      minHeight: "200px",
+      minHeight: "250px",
     },
     [theme.breakpoints.down("xs")]: {
       minHeight: "130px",
@@ -46,38 +48,32 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-let tileData = [
-  {
-    img:
-      "https://res.cloudinary.com/khoa-milan/image/upload/v1613726025/152080731_321119076319698_8940594879176684497_n_pdnspp.jpg",
-  },
-  {
-    img:
-      "https://res.cloudinary.com/khoa-milan/image/upload/v1613726025/caokyduyen_hy4cws.jpg",
-  },
-  {
-    img:
-      "https://res.cloudinary.com/khoa-milan/image/upload/v1613622766/x6dgcmmkgtylcncw3iqa.jpg",
-  },
-];
-
-export default function PostGallerry() {
+export default function PostGallerry({ posts }) {
   const classes = useStyles();
 
   return (
     <div className={classes.root}>
       <GridList className={classes.gridList} cols={3}>
-        {tileData.map((tile) => (
-          <GridListTile className={classes.gridTile} key={tile.img} cols={1}>
-            <img src={tile.img} alt="gird list" />
-            <GridListTileBar
-              className={classes.titleBar}
-              actionIcon={<CollectionsIcon className={classes.icon} />}
-              titlePosition="top"
-              actionPosition="right"
-            />
-          </GridListTile>
-        ))}
+        {posts.length > 0 &&
+          posts.map((post) => (
+            <GridListTile
+              component={Link}
+              to={`/post/${post._id}`}
+              className={classes.gridTile}
+              key={post._id}
+              cols={1}
+            >
+              <img src={post.images[0].url} alt="gird list" />
+              {post.images?.length > 1 && (
+                <GridListTileBar
+                  className={classes.titleBar}
+                  actionIcon={<CollectionsIcon className={classes.icon} />}
+                  titlePosition="top"
+                  actionPosition="right"
+                />
+              )}
+            </GridListTile>
+          ))}
       </GridList>
     </div>
   );

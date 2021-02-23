@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function SimpleSlider() {
+function SimpleSlider({ images }) {
   const classes = useStyles();
   const [activeSlide, setActiveSlide] = useState(0);
   const [hideLeftArrow, setHideLeftArrow] = useState(true);
@@ -87,12 +87,12 @@ function SimpleSlider() {
   }, [activeSlide]);
 
   useEffect(() => {
-    if (activeSlide === 2) {
+    if (activeSlide === images.length - 1) {
       sethideRightArrow(true);
     } else {
       sethideRightArrow(false);
     }
-  }, [activeSlide]);
+  }, [activeSlide, images.length]);
 
   const renderArrows = () => {
     return (
@@ -123,27 +123,16 @@ function SimpleSlider() {
         ref={(slider) => (customSlider.current = slider)}
         {...settings}
       >
-        <div className={classes.mediaRoot}>
-          <CardMedia
-            image="https://res.cloudinary.com/khoa-milan/image/upload/v1613726025/152080731_321119076319698_8940594879176684497_n_pdnspp.jpg"
-            title="slide"
-            className={classes.media}
-          />
-        </div>
-        <div className={classes.mediaRoot}>
-          <CardMedia
-            image="https://res.cloudinary.com/khoa-milan/image/upload/v1613726025/caokyduyen_hy4cws.jpg"
-            title="slide"
-            className={classes.media}
-          />
-        </div>
-        <div className={classes.mediaRoot}>
-          <CardMedia
-            image="https://res.cloudinary.com/khoa-milan/image/upload/v1613622766/x6dgcmmkgtylcncw3iqa.jpg"
-            title="slide"
-            className={classes.media}
-          />
-        </div>
+        {images.length > 0 &&
+          images.map((image) => (
+            <div key={image.public_id} className={classes.mediaRoot}>
+              <CardMedia
+                image={image.url}
+                title="slide"
+                className={classes.media}
+              />
+            </div>
+          ))}
       </Slider>
     </section>
   );

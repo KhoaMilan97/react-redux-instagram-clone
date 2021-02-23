@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+
 import Container from "@material-ui/core/Container";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
@@ -5,9 +8,12 @@ import Grid from "@material-ui/core/Grid";
 import Avatar from "@material-ui/core/Avatar";
 import MuiLink from "@material-ui/core/Link";
 import Typography from "@material-ui/core/Typography";
+import { Hidden } from "@material-ui/core";
 
 import HomeCard from "../components/card/HomeCard";
-import { Hidden } from "@material-ui/core";
+import CreatePostForm from "../components/form/CreatePostForm";
+import { getFollowerPost } from "../functions/post";
+import Spinner from "../components/loading/Spinner";
 
 const avatarUrl =
   "https://instagram.fsgn5-7.fna.fbcdn.net/v/t51.2885-19/s150x150/140698278_791431071584814_6033925397072706607_n.jpg?_nc_ht=instagram.fsgn5-7.fna.fbcdn.net&_nc_ohc=q-gAp4wlFasAX-xMv0t&tp=1&oh=961e3840bfc10ac52c45b71d14a705a9&oe=6037D01C";
@@ -46,18 +52,42 @@ const Home = () => {
   const classes = useStyles();
   const theme = useTheme();
   const matchesSM = useMediaQuery(theme.breakpoints.down("sm"));
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const auth = useSelector((state) => state.auth);
+  const { user, token } = auth;
+
+  useEffect(() => {
+    setLoading(true);
+    getFollowerPost(user._id, token)
+      .then((res) => {
+        setPosts(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+  }, [user._id, token]);
+
+  if (loading) {
+    return <Spinner pending={loading} />;
+  }
+
   return (
     <>
       <Container maxWidth="md">
         <Grid container justify="center">
           <Grid
             item
-            md={8}
-            sm={10}
             xs={12}
+            sm={8}
             style={{ paddingRight: matchesSM ? 0 : 30 }}
           >
-            <HomeCard />
+            <CreatePostForm />
+            {posts.map((post) => (
+              <HomeCard key={post._id} post={post} />
+            ))}
           </Grid>
           <Hidden smDown>
             <Grid item md={4}>

@@ -2,26 +2,27 @@ import { Route, Switch, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import SignUp from "./pages/SignUp";
 import Footer from "./components/Footer";
-import SignIn from "./pages/SignIn";
 import Header from "./components/header/Header";
-import Home from "./pages/Home";
-import Profile from "./pages/Profile";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
+import InstaLoading from "./components/loading/InstaLoading";
 
-import PrivateRoute from "./utils/privateRoute";
-import UserRoute from "./utils/userRoute";
-
-import { getAccessToken } from "./functions/auth";
-import { checkCurrentUser } from "./redux/actions/authAction";
 import NotFound from "./pages/NotFound";
 import Accounts from "./pages/Accounts";
-import InstaLoading from "./components/loading/InstaLoading";
+import Home from "./pages/Home";
 import Messages from "./pages/Messages";
 import Explore from "./pages/Explore";
 import Notifications from "./pages/Notifications";
+import PostDetail from "./pages/PostDetail";
+import Profile from "./pages/profile/Profile";
+import SignIn from "./pages/auth/SignIn";
+import SignUp from "./pages/auth/SignUp";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+
+import PrivateRoute from "./utils/privateRoute";
+import UserRoute from "./utils/userRoute";
+import { getAccessToken } from "./functions/auth";
+import { checkCurrentUser } from "./redux/actions/authAction";
 
 function App() {
   const { pathname } = useLocation();
@@ -79,6 +80,7 @@ function App() {
         <PrivateRoute path="/messages" component={Messages} />
         <PrivateRoute path="/explore" component={Explore} />
         <PrivateRoute path="/notifications" component={Notifications} />
+        <PrivateRoute path="/post/:id" component={PostDetail} />
         <PrivateRoute sensitive exact path="/:username" component={Profile} />
         <PrivateRoute sensitive exact path="/" component={Home} />
 

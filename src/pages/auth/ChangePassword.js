@@ -13,10 +13,10 @@ import IconButton from "@material-ui/core/IconButton";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
-import { checkOldPassword, resetPassword } from "../functions/auth";
-import { setMessage } from "../redux/actions/messageAction";
-import { actionTypes } from "../redux/actions/actionType";
-import Message from "../utils/Message";
+import { checkOldPassword, resetPassword } from "../../functions/auth";
+import { setMessage } from "../../redux/actions/messageAction";
+import { actionTypes } from "../../redux/actions/actionType";
+import Message from "../../utils/Message";
 
 const useStyles = makeStyles((theme) => ({
   root: {

@@ -20,12 +20,14 @@ import useMediaQuery from "@material-ui/core/useMediaQuery";
 import PersonIcon from "@material-ui/icons/Person";
 import DoneIcon from "@material-ui/icons/Done";
 
-import NotFound from "../pages/NotFound";
-import { getUser, followUser, unfollowUser } from "../functions/user";
-import Spinner from "../components/loading/Spinner";
-import { actionTypes } from "../redux/actions/actionType";
-import PostGallerry from "./profile/PostGallerry";
-import FollowModal from "../components/modal/FollowModal";
+import NotFound from "../NotFound";
+import { getUser, followUser, unfollowUser } from "../../functions/user";
+import Spinner from "../../components/loading/Spinner";
+import { actionTypes } from "../../redux/actions/actionType";
+import PostGallerry from "./PostGallerry";
+import FollowModal from "../../components/modal/FollowModal";
+import { getPosts } from "../../functions/post";
+import SingleLoading from "../../components/loading/SingleLoading";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -77,6 +79,8 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [followLoading, setFollowLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [postLoading, setPostLoading] = useState(false);
 
   const classes = useStyles();
   const { username } = useParams();
@@ -105,6 +109,21 @@ function Profile() {
         setLoading(false);
       });
   }, [username]);
+
+  useEffect(() => {
+    if (user._id) {
+      setPostLoading(true);
+      getPosts(user._id, auth.token)
+        .then((res) => {
+          setPosts(res.data.post);
+          setPostLoading(false);
+        })
+        .catch((err) => {
+          console.log(err);
+          setPostLoading(false);
+        });
+    }
+  }, [user._id, auth.token]);
 
   if (loading) {
     return <Spinner pending={loading} />;
@@ -312,8 +331,14 @@ function Profile() {
             />
           </Tabs>
         </Paper>
-        <PostGallerry />
       </Grid>
+      {postLoading ? (
+        <SingleLoading pending={postLoading} />
+      ) : posts.length > 0 ? (
+        <PostGallerry posts={posts} />
+      ) : (
+        <Typography>This User No Posts</Typography>
+      )}
     </Container>
   );
 }

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import React from "react";
+import { Link } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -11,15 +11,11 @@ import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import Visibility from "@material-ui/icons/Visibility";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import IconButton from "@material-ui/core/IconButton";
-import VisibilityOff from "@material-ui/icons/VisibilityOff";
 
-import { resetPasswordAction } from "../redux/actions/authAction";
-import Message from "../utils/Message";
+import { forgotPasswordAction } from "../../redux/actions/authAction";
+import Message from "../../utils/Message";
 
-import bgTitle from "../assets/img/32f0a4f27407.png";
+import bgTitle from "../../assets/img/32f0a4f27407.png";
 
 const useStyles = makeStyles((theme) => ({
   wrapper: {
@@ -83,15 +79,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const schema = yup.object().shape({
-  password: yup.string().required().min(6),
-  confirmPassword: yup
+  email: yup
     .string()
-    .required()
-    .min(6)
-    .oneOf([yup.ref("password"), null], "Passwords must match"),
+    .matches(/^(?:\d{10}|\w+@\w+\.\w{2,3})$/, "You need provide email")
+    .required(),
 });
 
-const ResetPassword = () => {
+const ForgotPassword = () => {
   const classes = useStyles();
   const { control, handleSubmit, errors } = useForm({
     mode: "onBlur",
@@ -99,29 +93,9 @@ const ResetPassword = () => {
   });
   const dispatch = useDispatch();
   const loading = useSelector((state) => state.loading);
-  const [showPass, setShowPass] = useState(false);
-  const [showConfirmPass, setShowConfirmPass] = useState(false);
-  const { token } = useParams();
 
   const onSubmit = (data) => {
-    const { password } = data;
-    dispatch(resetPasswordAction(password, token));
-  };
-
-  const handleClickShowPassword = () => {
-    setShowPass(!showPass);
-  };
-
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
-
-  const handleClickShowConfirmPassword = () => {
-    setShowConfirmPass(!showConfirmPass);
-  };
-
-  const handleMouseDownConfirmPassword = (event) => {
-    event.preventDefault();
+    dispatch(forgotPasswordAction(data));
   };
 
   return (
@@ -132,63 +106,23 @@ const ResetPassword = () => {
             Instagram
           </Typography>
           <Typography component="h2" variant="h6" className={classes.subTitle}>
-            Reset your password!
+            Enter your email, phone, or username and we'll send you a link to
+            get back into your account.
           </Typography>
           <Message />
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
               as={TextField}
               defaultValue=""
-              name="password"
+              name="email"
               fullWidth
-              label="New Password"
+              label="Email"
               variant="outlined"
               size="small"
-              type={showPass ? "text" : "password"}
               className={classes.formControl}
-              error={!!errors.password}
-              helperText={errors?.password?.message}
+              error={!!errors.email}
+              helperText={errors?.email?.message}
               control={control}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
-                      style={{ padding: 0 }}
-                    >
-                      {showPass ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <Controller
-              as={TextField}
-              defaultValue=""
-              name="confirmPassword"
-              fullWidth
-              label="Confirm New Password"
-              variant="outlined"
-              size="small"
-              type={showConfirmPass ? "text" : "password"}
-              className={classes.formControl}
-              error={!!errors.confirmPassword}
-              helperText={errors?.confirmPassword?.message}
-              control={control}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={handleClickShowConfirmPassword}
-                      onMouseDown={handleMouseDownConfirmPassword}
-                      style={{ padding: 0 }}
-                    >
-                      {showConfirmPass ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
             />
 
             <Button
@@ -215,11 +149,11 @@ const ResetPassword = () => {
           className={classes.link}
           style={{ fontSize: "14px" }}
         >
-          <Link to="/signin">Skip</Link>
+          <Link to="/signin">Back To Login</Link>
         </Typography>
       </Container>
     </>
   );
 };
 
-export default ResetPassword;
+export default ForgotPassword;

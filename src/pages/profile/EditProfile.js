@@ -16,9 +16,9 @@ import {
   RadioGroup,
 } from "@material-ui/core";
 
-import Message from "../utils/Message";
-import UploadAvatar from "../components/form/UploadAvatar";
-import AvatarModal from "../components/modal/AvatarModal";
+import Message from "../../utils/Message";
+import UploadAvatar from "../../components/form/UploadAvatar";
+import AvatarModal from "../../components/modal/AvatarModal";
 
 const useStyles = makeStyles((theme) => ({
   root: {

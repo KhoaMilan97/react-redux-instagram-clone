@@ -1,4 +1,5 @@
 import React from "react";
+import moment from "moment";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
@@ -19,13 +20,17 @@ import FormControl from "@material-ui/core/FormControl";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Input from "@material-ui/core/Input";
 import Divider from "@material-ui/core/Divider";
-import { Button } from "@material-ui/core";
+import { Button, CardMedia } from "@material-ui/core";
 
 import SimpleSlider from "./SimpleSlider";
 
 const useStyles = makeStyles((theme) => ({
   root: {
     width: "100%",
+    marginBottom: "50px",
+  },
+  cardContent: {
+    paddingBottom: "14px",
   },
   media: {
     paddingTop: "56.25%", // 16:9
@@ -48,6 +53,10 @@ const useStyles = makeStyles((theme) => ({
     "&:hover": {
       backgroundColor: "transparent",
     },
+    "&:disabled": {
+      color: "#0095f6",
+      opacity: "0.4",
+    },
   },
   icon: {
     padding: "5px",
@@ -55,28 +64,48 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: "transparent",
     },
   },
+  time: {
+    color: "#8e8e8e",
+    fontSize: "10px",
+    textTransform: "uppercase",
+    marginTop: "5px",
+    lineHeight: "18px",
+  },
+  input: {
+    padding: "10px 16px",
+  },
 }));
 
-export default function HomeCard() {
+export default function HomeCard({ post }) {
   const classes = useStyles();
 
   return (
-    <Card className={classes.root}>
+    <Card variant="outlined" className={classes.root}>
       <CardHeader
         avatar={
-          <Avatar aria-label="recipe" className={classes.avatar}>
-            R
-          </Avatar>
+          <Avatar
+            aria-label="recipe"
+            className={classes.avatar}
+            src={post.postedBy?.avatar.url}
+          />
         }
         action={
           <IconButton aria-label="settings">
             <MoreHorizIcon />
           </IconButton>
         }
-        title="yua_mikami"
+        title={post.postedBy?.username}
       />
-
-      <SimpleSlider />
+      {post.images.length > 1 ? (
+        <SimpleSlider images={post.images} />
+      ) : (
+        <CardMedia
+          image={post.images[0]?.url}
+          title="slide"
+          className={classes.media}
+        />
+      )}
+      {/* <SimpleSlider /> */}
 
       <CardActions disableSpacing>
         <IconButton className={classes.icon} aria-label="add to favorites">
@@ -92,28 +121,38 @@ export default function HomeCard() {
           <BookmarkBorderOutlinedIcon />
         </IconButton>
       </CardActions>
-      <CardContent style={{ paddingTop: 0 }}>
+      <CardContent className={classes.cardContent} style={{ paddingTop: 0 }}>
         <Typography>0 likes</Typography>
         <Typography variant="body2" color="textSecondary" component="p">
-          duongmydien Bạn follow tôi bao lâu rồi?
+          <span style={{ color: "#262626" }}>{post.postedBy?.username}</span>{" "}
+          {post.title}
         </Typography>
-
-        <FormControl fullWidth style={{ marginTop: "10px" }}>
-          <Divider />
-          <Input
-            id="standard-adornment-password"
-            type="text"
-            style={{ marginTop: 5 }}
-            disableUnderline
-            placeholder="Add a comment..."
-            endAdornment={
-              <InputAdornment position="end">
-                <Button className={classes.send}>Post</Button>
-              </InputAdornment>
-            }
-          />
-        </FormControl>
+        <Typography className={classes.time}>
+          {moment(post.createdAt).fromNow()}
+        </Typography>
       </CardContent>
+      <Divider variant="fullWidth" />
+      <FormControl fullWidth>
+        <Input
+          type="text"
+          style={{ marginTop: 5 }}
+          disableUnderline
+          className={classes.input}
+          placeholder="Add a comment..."
+          endAdornment={
+            <InputAdornment position="end">
+              <Button
+                className={classes.send}
+                disableRipple
+                style={{ paddingRight: 0 }}
+                disabled
+              >
+                Post
+              </Button>
+            </InputAdornment>
+          }
+        />
+      </FormControl>
     </Card>
   );
 }

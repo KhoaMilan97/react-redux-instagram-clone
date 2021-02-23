@@ -7,8 +7,8 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 
 import PrivateRoute from "../utils/privateRoute";
-import EditProfile from "./EditProfile";
-import ChangePassword from "./ChangePassword";
+import EditProfile from "./profile/EditProfile";
+import ChangePassword from "./auth/ChangePassword";
 
 function a11yProps(index) {
   return {
