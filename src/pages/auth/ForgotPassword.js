@@ -13,7 +13,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 import { forgotPasswordAction } from "../../redux/actions/authAction";
-import Message from "../../utils/Message";
 
 import bgTitle from "../../assets/img/32f0a4f27407.png";
 
@@ -109,7 +108,7 @@ const ForgotPassword = () => {
             Enter your email, phone, or username and we'll send you a link to
             get back into your account.
           </Typography>
-          <Message />
+
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
               as={TextField}

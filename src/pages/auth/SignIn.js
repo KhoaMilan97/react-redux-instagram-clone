@@ -17,7 +17,6 @@ import IconButton from "@material-ui/core/IconButton";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 
 import { loginUserAction } from "../../redux/actions/authAction";
-import Message from "../../utils/Message";
 
 import bgTitle from "../../assets/img/32f0a4f27407.png";
 
@@ -115,7 +114,7 @@ const SignIn = () => {
           <Typography component="h1" variant="h4" className={classes.title}>
             Instagram
           </Typography>
-          <Message />
+
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
               as={TextField}

@@ -19,3 +19,13 @@ export const getFollowerPost = async (id, token) =>
   await axios.get(`/api/follower-post/${id}`, {
     headers: { Authorization: token },
   });
+
+export const removePosts = async (id, token) =>
+  await axios.delete(`/api/post/${id}`, {
+    headers: { Authorization: token },
+  });
+
+export const updatePost = async (data, id, token) =>
+  await axios.patch(`/api/post/${id}`, data, {
+    headers: { Authorization: token },
+  });

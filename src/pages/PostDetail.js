@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState, useCallback } from "react";
+import { useParams, useHistory, Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 
 import {
   Container,
@@ -16,8 +16,10 @@ import {
 import { makeStyles } from "@material-ui/core/styles";
 
 import SimpleSlider from "../components/card/SimpleSlider";
-import { getSinglePost } from "../functions/post";
+import { getSinglePost, removePosts } from "../functions/post";
+import { setMessage } from "../redux/actions/messageAction";
 import Spinner from "../components/loading/Spinner";
+import ConfirmModal from "../components/modal/ConfirmModal";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -44,26 +46,43 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function PostDetail() {
+  const [post, setPost] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+
+  const history = useHistory();
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
   const classes = useStyles();
   const { id } = useParams();
-  const [post, setPost] = useState("");
-  const auth = useSelector((state) => state.auth);
-  const [loading, setLoading] = useState(true);
+
+  const getPost = useCallback(() => {
+    setLoading(true);
+    getSinglePost(id, auth.token)
+      .then((response) => {
+        setPost(response.data.post);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+  }, [id, auth.token]);
 
   useEffect(() => {
-    if (id) {
-      setLoading(true);
-      getSinglePost(id, auth.token)
-        .then((response) => {
-          setPost(response.data.post);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.log(err);
-          setLoading(false);
-        });
-    }
-  }, [id, auth.token]);
+    getPost();
+  }, [getPost]);
+
+  const handleRemovePost = () => {
+    removePosts(id, auth.token)
+      .then((res) => {
+        dispatch(setMessage(res.data.msg, "Delete post success!"));
+        history.push(`/${auth.user.username}`);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   if (loading) {
     return <Spinner pending={loading} />;
@@ -91,7 +110,22 @@ function PostDetail() {
             <Typography className={classes.username}>
               {post.postedBy?.username}
             </Typography>
-            <Button>Following</Button>
+            {post.postedBy?._id === auth.user._id ? (
+              <div style={{ flex: "1", textAlign: "right" }}>
+                <Button
+                  color="primary"
+                  component={Link}
+                  to={`/post/edit/${post._id}`}
+                >
+                  Edit
+                </Button>
+                <Button color="secondary" onClick={() => setOpen(true)}>
+                  Delete
+                </Button>
+              </div>
+            ) : (
+              <Button>Following</Button>
+            )}
           </Grid>
           <Divider />
           <Grid className={classes.rightBox} item container alignItems="center">
@@ -103,6 +137,11 @@ function PostDetail() {
           </Grid>
         </Grid>
       </Grid>
+      <ConfirmModal
+        open={open}
+        setOpen={setOpen}
+        handleRemovePost={handleRemovePost}
+      />
     </Container>
   );
 }

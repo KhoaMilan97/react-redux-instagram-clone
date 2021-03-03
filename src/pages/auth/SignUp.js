@@ -19,7 +19,6 @@ import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import { registerAction } from "../../redux/actions/authAction";
 
 import bgTitle from "../../assets/img/32f0a4f27407.png";
-import Message from "../../utils/Message";
 
 const useStyles = makeStyles((theme) => ({
   wrapper: {
@@ -122,7 +121,7 @@ const SignUp = () => {
           <Typography component="h2" variant="h6" className={classes.subTitle}>
             Sign up to see photos and videos from your friends.
           </Typography>
-          <Message />
+
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
               as={TextField}

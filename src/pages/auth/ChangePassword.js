@@ -16,7 +16,6 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import { checkOldPassword, resetPassword } from "../../functions/auth";
 import { setMessage } from "../../redux/actions/messageAction";
 import { actionTypes } from "../../redux/actions/actionType";
-import Message from "../../utils/Message";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -131,7 +130,6 @@ function ChangePassword() {
   return (
     <div className={classes.root}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Message />
         <Grid container justify="space-around" spacing={4}>
           <Grid item container alignItems="center">
             <Grid item xs={4}>

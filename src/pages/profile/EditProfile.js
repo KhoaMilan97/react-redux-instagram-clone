@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -16,9 +16,11 @@ import {
   RadioGroup,
 } from "@material-ui/core";
 
-import Message from "../../utils/Message";
 import UploadAvatar from "../../components/form/UploadAvatar";
 import AvatarModal from "../../components/modal/AvatarModal";
+import { updateUser } from "../../functions/user";
+import { setMessage } from "../../redux/actions/messageAction";
+import { actionTypes } from "../../redux/actions/actionType";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -49,18 +51,29 @@ const useStyles = makeStyles((theme) => ({
 
 function EditProfile() {
   const classes = useStyles();
-  const { user, loading } = useSelector((state) => state.auth);
+  const { user, loading, token } = useSelector((state) => state.auth);
   const { control, handleSubmit } = useForm();
   const [imageLoading, setImageLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const onSubmit = (data) => {
-    console.log(data);
+    updateUser(data, user._id, token)
+      .then((res) => {
+        dispatch({
+          type: actionTypes.GET_USER,
+          payload: res.data,
+        });
+        dispatch(setMessage("Update Profile Success!", "success"));
+      })
+      .catch((err) => {
+        err.response.data.msg &&
+          dispatch(setMessage(err.response.data.msg, "error"));
+      });
   };
 
   return (
     <div className={classes.root}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Message />
         <Grid container justify="space-around" spacing={4}>
           <Grid item container alignItems="center">
             <Grid item xs={4}>

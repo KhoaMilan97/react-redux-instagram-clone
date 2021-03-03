@@ -19,6 +19,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import PersonIcon from "@material-ui/icons/Person";
 import DoneIcon from "@material-ui/icons/Done";
+import MuiLink from "@material-ui/core/Link";
 
 import NotFound from "../NotFound";
 import { getUser, followUser, unfollowUser } from "../../functions/user";
@@ -269,7 +270,26 @@ function Profile() {
               </Typography>
             </Grid>
           </Grid>
-          <Typography style={{ marginTop: "15px" }}>{user.fullname}</Typography>
+          <Typography style={{ marginTop: "15px", fontWeight: 600 }}>
+            {user.fullname}
+            {user.phoneNumber && (
+              <span style={{ color: "#3f51b5" }}>
+                {" - "}
+                {user.phoneNumber}
+              </span>
+            )}
+          </Typography>
+          <Typography>{user.description}</Typography>
+          {user.website && (
+            <MuiLink
+              target="_blank"
+              rel="noopener"
+              style={{ fontWeight: 600 }}
+              href={user.website}
+            >
+              {user.website}
+            </MuiLink>
+          )}
         </Grid>
       </Grid>
       <Grid container style={{ marginTop: 30 }}>

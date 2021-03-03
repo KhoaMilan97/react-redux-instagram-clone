@@ -23,6 +23,8 @@ import PrivateRoute from "./utils/privateRoute";
 import UserRoute from "./utils/userRoute";
 import { getAccessToken } from "./functions/auth";
 import { checkCurrentUser } from "./redux/actions/authAction";
+import EditPost from "./pages/post/EditPost";
+import Message from "./utils/Message";
 
 function App() {
   const { pathname } = useLocation();
@@ -61,6 +63,7 @@ function App() {
   return (
     <>
       {!hide && <Header />}
+      <Message />
       <Switch>
         <UserRoute sensitive exact path="/signup" component={SignUp} />
         <UserRoute sensitive exact path="/signin" component={SignIn} />
@@ -80,6 +83,7 @@ function App() {
         <PrivateRoute path="/messages" component={Messages} />
         <PrivateRoute path="/explore" component={Explore} />
         <PrivateRoute path="/notifications" component={Notifications} />
+        <PrivateRoute path="/post/edit/:id" component={EditPost} />
         <PrivateRoute path="/post/:id" component={PostDetail} />
         <PrivateRoute sensitive exact path="/:username" component={Profile} />
         <PrivateRoute sensitive exact path="/" component={Home} />

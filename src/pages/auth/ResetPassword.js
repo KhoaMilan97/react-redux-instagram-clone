@@ -17,7 +17,6 @@ import IconButton from "@material-ui/core/IconButton";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 
 import { resetPasswordAction } from "../../redux/actions/authAction";
-import Message from "../../utils/Message";
 
 import bgTitle from "../../assets/img/32f0a4f27407.png";
 
@@ -134,7 +133,7 @@ const ResetPassword = () => {
           <Typography component="h2" variant="h6" className={classes.subTitle}>
             Reset your password!
           </Typography>
-          <Message />
+
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
               as={TextField}

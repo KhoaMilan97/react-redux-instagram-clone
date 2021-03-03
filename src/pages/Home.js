@@ -15,9 +15,6 @@ import CreatePostForm from "../components/form/CreatePostForm";
 import { getFollowerPost } from "../functions/post";
 import Spinner from "../components/loading/Spinner";
 
-const avatarUrl =
-  "https://instagram.fsgn5-7.fna.fbcdn.net/v/t51.2885-19/s150x150/140698278_791431071584814_6033925397072706607_n.jpg?_nc_ht=instagram.fsgn5-7.fna.fbcdn.net&_nc_ohc=q-gAp4wlFasAX-xMv0t&tp=1&oh=961e3840bfc10ac52c45b71d14a705a9&oe=6037D01C";
-
 const useStyles = makeStyles((theme) => ({
   avatar: {
     width: 60,
@@ -96,7 +93,7 @@ const Home = () => {
                   <Grid item md={3}>
                     <Avatar
                       className={classes.avatar}
-                      src={avatarUrl}
+                      src={user.avatar.url}
                       alt="profile picture"
                     />
                   </Grid>
@@ -128,7 +125,7 @@ const Home = () => {
                   <Grid item md={2}>
                     <Avatar
                       className={classes.avatarSmall}
-                      src={avatarUrl}
+                      src={user.avatar.url}
                       alt="profile picture"
                     />
                   </Grid>
