@@ -109,16 +109,19 @@ export default function PostModal({ open, setOpen }) {
 
   const handleCreatePost = () => {
     let postedBy = auth.user._id;
+    setLoading(true);
     createPost({ title, images, postedBy }, auth.token)
       .then((res) => {
         console.log(res);
         dispatch(setMessage("New Post is created.", "success"));
         setTitle("");
         setImages([]);
+        setLoading(false);
         setOpen(false);
       })
       .catch((err) => {
         console.log(err);
+        setLoading(false);
         setOpen(false);
       });
   };
@@ -206,7 +209,7 @@ export default function PostModal({ open, setOpen }) {
             variant="contained"
           >
             {loading ? (
-              <CircularProgress size={20} style={{ color: "white" }} />
+              <CircularProgress size={23} style={{ color: "white" }} />
             ) : (
               "Post"
             )}

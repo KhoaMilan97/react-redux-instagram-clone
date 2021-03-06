@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import moment from "moment";
 
 import {
   Container,
@@ -12,6 +13,11 @@ import {
   Paper,
   Divider,
   CardMedia,
+  CardHeader,
+  CardContent,
+  FormControl,
+  InputAdornment,
+  Input,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -20,6 +26,7 @@ import { getSinglePost, removePosts } from "../functions/post";
 import { setMessage } from "../redux/actions/messageAction";
 import Spinner from "../components/loading/Spinner";
 import ConfirmModal from "../components/modal/ConfirmModal";
+import CardAction from "../components/card/CardAction";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -37,11 +44,34 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: "56.25%", // 16:9
     minHeight: "600px",
     height: "100%",
-    objectFit: "cover",
+
     "&:focus": {
       border: "none",
       outline: "none",
     },
+  },
+
+  input: {
+    padding: "8px 16px",
+  },
+  send: {
+    color: "#0095f6",
+    fontSize: "14px",
+    textTransform: "capitalize",
+    "&:hover": {
+      backgroundColor: "transparent",
+    },
+    "&:disabled": {
+      color: "#0095f6",
+      opacity: "0.4",
+    },
+  },
+  time: {
+    color: "#8e8e8e",
+    fontSize: "10px",
+    textTransform: "uppercase",
+    marginTop: "5px",
+    lineHeight: "18px",
   },
 }));
 
@@ -55,6 +85,10 @@ function PostDetail() {
   const auth = useSelector((state) => state.auth);
   const classes = useStyles();
   const { id } = useParams();
+
+  const checkUserIsFollow = (id) => {
+    return auth.user.following.some((item) => item._id === id);
+  };
 
   const getPost = useCallback(() => {
     setLoading(true);
@@ -76,7 +110,7 @@ function PostDetail() {
   const handleRemovePost = () => {
     removePosts(id, auth.token)
       .then((res) => {
-        dispatch(setMessage(res.data.msg, "Delete post success!"));
+        dispatch(setMessage("Delete post success!", "success"));
         history.push(`/${auth.user.username}`);
       })
       .catch((err) => {
@@ -91,23 +125,33 @@ function PostDetail() {
   return (
     <Container maxWidth="md">
       <Grid container component={Paper} variant="outlined" square>
-        <Grid item container justify="flex-end" sm={7}>
-          <Card className={classes.card}>
-            {post.images?.length > 0 ? (
-              <SimpleSlider images={post.images} />
+        <Grid item container justify="flex-end" md={7}>
+          <Card className={classes.card} variant="outlined">
+            {post.images?.length > 1 ? (
+              <SimpleSlider images={post.images} bottom="10px" color="white" />
             ) : (
               <CardMedia
-                image={post.images?.url}
+                image={post.images[0]?.url}
                 title="slide"
                 className={classes.media}
               />
             )}
           </Card>
         </Grid>
-        <Grid item container direction="column" sm={5}>
+        <Grid item container direction="column" md={5}>
           <Grid className={classes.rightBox} item container alignItems="center">
-            <Avatar src={post.postedBy?.avatar.url} alt="avatar" />
-            <Typography className={classes.username}>
+            <Avatar
+              src={post.postedBy?.avatar.url}
+              alt="avatar"
+              component={Link}
+              to={`/${post.postedBy?.username}`}
+            />
+            <Typography
+              component={Link}
+              style={{ color: "inherit" }}
+              to={`/${post.postedBy?.username}`}
+              className={classes.username}
+            >
               {post.postedBy?.username}
             </Typography>
             {post.postedBy?._id === auth.user._id ? (
@@ -123,17 +167,89 @@ function PostDetail() {
                   Delete
                 </Button>
               </div>
-            ) : (
+            ) : checkUserIsFollow(post.postedBy?._id) ? (
               <Button>Following</Button>
+            ) : (
+              <Button>Follow</Button>
             )}
           </Grid>
           <Divider />
-          <Grid className={classes.rightBox} item container alignItems="center">
-            <Avatar src={post.postedBy?.avatar.url} alt="avatar" />
-            <Typography className={classes.username}>
-              {post.postedBy?.username}
-            </Typography>
-            <Typography>{post.title}</Typography>
+
+          <Grid
+            item
+            container
+            style={{
+              flex: 1,
+            }}
+          >
+            <Card
+              variant="outlined"
+              style={{
+                borderWidth: 0,
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+              }}
+            >
+              <CardHeader
+                avatar={
+                  <Avatar
+                    src={post.postedBy?.avatar.url}
+                    aria-label="recipe"
+                    className={classes.avatar}
+                    component={Link}
+                    to={`/${post.postedBy?.username}`}
+                  />
+                }
+                title={
+                  <Link
+                    style={{ color: "inherit" }}
+                    to={`/${post.postedBy?.username}`}
+                  >
+                    {post.postedBy?.username}
+                  </Link>
+                }
+                subheader={post.title}
+              />
+              <CardContent style={{ flexGrow: 1 }}>
+                <Typography variant="body2" color="textSecondary" component="p">
+                  This impressive paella is a perfect party dish and a fun meal
+                  to cook together with your guests. Add 1 cup of frozen peas
+                  along with the mussels, if you like.
+                </Typography>
+              </CardContent>
+              <CardAction post={post} setPost={setPost} auth={auth} />
+              <div style={{ padding: "5px 14px" }}>
+                <Typography>
+                  {post.likes.length} {post.likes.length > 1 ? "likes" : "like"}
+                </Typography>
+                <Typography className={classes.time}>
+                  {moment(post.createdAt).fromNow()}
+                </Typography>
+              </div>
+              <Divider variant="fullWidth" />
+              <FormControl fullWidth>
+                <Input
+                  type="text"
+                  style={{ marginTop: 5 }}
+                  disableUnderline
+                  className={classes.input}
+                  placeholder="Add a comment..."
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <Button
+                        className={classes.send}
+                        disableRipple
+                        style={{ paddingRight: 0 }}
+                        disabled
+                      >
+                        Post
+                      </Button>
+                    </InputAdornment>
+                  }
+                />
+              </FormControl>
+            </Card>
           </Grid>
         </Grid>
       </Grid>

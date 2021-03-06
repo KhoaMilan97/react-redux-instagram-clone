@@ -15,13 +15,14 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: "56.25%", // 16:9
     minHeight: "600px",
     height: "100%",
-    objectFit: "cover",
+
     "&:focus": {
       border: "none",
       outline: "none",
     },
   },
   mediaRoot: {
+    display: "block !important",
     "&:focus": {
       border: "none",
       outline: "none",
@@ -37,6 +38,26 @@ const useStyles = makeStyles((theme) => ({
   simpleSlide: {
     position: "relative",
     height: "100%",
+    "& .slick-dots": {
+      bottom: (props) => props.bottom,
+    },
+    "& .slick-dots li": {
+      margin: 0,
+      width: "12px",
+      height: "12px",
+      pointerEvents: "none !important",
+    },
+    "& .slick-dots li button": {
+      cursor: "default !important",
+      width: "12px",
+      height: "12px",
+    },
+    "& .slick-dots li button:before": {
+      fontSize: 7,
+    },
+    "& .slick-dots li.slick-active button:before": {
+      color: (props) => (props.color ? props.color : "#0095f6"),
+    },
   },
   arrowPrev: {
     backgroundColor: "#fafafaa6",
@@ -60,8 +81,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function SimpleSlider({ images }) {
-  const classes = useStyles();
+function SimpleSlider({ images, ...props }) {
+  const classes = useStyles(props);
   const [activeSlide, setActiveSlide] = useState(0);
   const [hideLeftArrow, setHideLeftArrow] = useState(true);
   const [hideRightArrow, sethideRightArrow] = useState(false);

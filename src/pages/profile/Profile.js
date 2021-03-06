@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import ReactHtmlParser from "react-html-parser";
 
 import Avatar from "@material-ui/core/Avatar";
 import Grid from "@material-ui/core/Grid";
@@ -71,6 +72,12 @@ const useStyles = makeStyles((theme) => ({
   number: {
     color: "#262626",
     fontWeight: 600,
+  },
+  story: {
+    "& p": {
+      marginTop: "5px",
+      marginBottom: "5px",
+    },
   },
 }));
 
@@ -279,7 +286,9 @@ function Profile() {
               </span>
             )}
           </Typography>
-          <Typography>{user.description}</Typography>
+          <div className={classes.story}>
+            {ReactHtmlParser(user.description)}
+          </div>
           {user.website && (
             <MuiLink
               target="_blank"

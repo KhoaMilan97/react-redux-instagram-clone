@@ -1,21 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import moment from "moment";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 
 import CardContent from "@material-ui/core/CardContent";
-import CardActions from "@material-ui/core/CardActions";
 import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import { red } from "@material-ui/core/colors";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
-import BookmarkBorderOutlinedIcon from "@material-ui/icons/BookmarkBorderOutlined";
-import FavoriteBorderOutlinedIcon from "@material-ui/icons/FavoriteBorderOutlined";
-import ModeCommentOutlinedIcon from "@material-ui/icons/ModeCommentOutlined";
-import SendIcon from "@material-ui/icons/Send";
 import FormControl from "@material-ui/core/FormControl";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Input from "@material-ui/core/Input";
@@ -23,6 +20,8 @@ import Divider from "@material-ui/core/Divider";
 import { Button, CardMedia } from "@material-ui/core";
 
 import SimpleSlider from "./SimpleSlider";
+
+import CardAction from "./CardAction";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -37,10 +36,6 @@ const useStyles = makeStyles((theme) => ({
     minHeight: "600px",
     height: "100%",
     objectFit: "cover",
-  },
-  expand: {
-    marginLeft: "auto",
-    padding: "5px",
   },
 
   avatar: {
@@ -58,12 +53,7 @@ const useStyles = makeStyles((theme) => ({
       opacity: "0.4",
     },
   },
-  icon: {
-    padding: "5px",
-    "&:hover": {
-      backgroundColor: "transparent",
-    },
-  },
+
   time: {
     color: "#8e8e8e",
     fontSize: "10px",
@@ -78,6 +68,9 @@ const useStyles = makeStyles((theme) => ({
 
 export default function HomeCard({ post }) {
   const classes = useStyles();
+  const [postCard, setPostCard] = useState(post);
+
+  const auth = useSelector((state) => state.auth);
 
   return (
     <Card variant="outlined" className={classes.root}>
@@ -86,7 +79,9 @@ export default function HomeCard({ post }) {
           <Avatar
             aria-label="recipe"
             className={classes.avatar}
-            src={post.postedBy?.avatar.url}
+            src={postCard.postedBy?.avatar.url}
+            component={Link}
+            to={`/${postCard.postedBy?.username}`}
           />
         }
         action={
@@ -94,41 +89,39 @@ export default function HomeCard({ post }) {
             <MoreHorizIcon />
           </IconButton>
         }
-        title={post.postedBy?.username}
+        title={
+          <Link
+            style={{ color: "inherit" }}
+            to={`/${postCard.postedBy?.username}`}
+          >
+            {postCard.postedBy?.username}
+          </Link>
+        }
       />
-      {post.images.length > 1 ? (
-        <SimpleSlider images={post.images} />
+      {postCard.images.length > 1 ? (
+        <SimpleSlider images={postCard.images} />
       ) : (
         <CardMedia
-          image={post.images[0]?.url}
+          image={postCard.images[0]?.url}
           title="slide"
           className={classes.media}
         />
       )}
-      {/* <SimpleSlider /> */}
 
-      <CardActions disableSpacing>
-        <IconButton className={classes.icon} aria-label="add to favorites">
-          <FavoriteBorderOutlinedIcon />
-        </IconButton>
-        <IconButton className={classes.icon} aria-label="comment">
-          <ModeCommentOutlinedIcon />
-        </IconButton>
-        <IconButton className={classes.icon} aria-label="share">
-          <SendIcon />
-        </IconButton>
-        <IconButton className={classes.expand} aria-label="show more">
-          <BookmarkBorderOutlinedIcon />
-        </IconButton>
-      </CardActions>
+      <CardAction post={postCard} setPost={setPostCard} auth={auth} />
+
       <CardContent className={classes.cardContent} style={{ paddingTop: 0 }}>
-        <Typography>0 likes</Typography>
+        <Typography>
+          {postCard.likes.length} {postCard.likes.length > 1 ? "likes" : "like"}
+        </Typography>
         <Typography variant="body2" color="textSecondary" component="p">
-          <span style={{ color: "#262626" }}>{post.postedBy?.username}</span>{" "}
-          {post.title}
+          <span style={{ color: "#262626" }}>
+            {postCard.postedBy?.username}
+          </span>{" "}
+          {postCard.title}
         </Typography>
         <Typography className={classes.time}>
-          {moment(post.createdAt).fromNow()}
+          {moment(postCard.createdAt).fromNow()}
         </Typography>
       </CardContent>
       <Divider variant="fullWidth" />

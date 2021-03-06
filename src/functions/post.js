@@ -29,3 +29,13 @@ export const updatePost = async (data, id, token) =>
   await axios.patch(`/api/post/${id}`, data, {
     headers: { Authorization: token },
   });
+
+export const likePost = async (data, id, token) =>
+  await axios.patch(`/api/like/${id}`, data, {
+    headers: { Authorization: token },
+  });
+
+export const unLikePost = async (data, id, token) =>
+  await axios.patch(`/api/unlike/${id}`, data, {
+    headers: { Authorization: token },
+  });

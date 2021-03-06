@@ -21,6 +21,7 @@ import AvatarModal from "../../components/modal/AvatarModal";
 import { updateUser } from "../../functions/user";
 import { setMessage } from "../../redux/actions/messageAction";
 import { actionTypes } from "../../redux/actions/actionType";
+import SimpleEditor from "../../components/SimpleEditor";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -47,16 +48,24 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 0,
     display: "block",
   },
+  loading: {
+    color: "white",
+  },
 }));
 
 function EditProfile() {
   const classes = useStyles();
-  const { user, loading, token } = useSelector((state) => state.auth);
+  const { user, token } = useSelector((state) => state.auth);
   const { control, handleSubmit } = useForm();
   const [imageLoading, setImageLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [description, setDescription] = useState("");
   const dispatch = useDispatch();
 
   const onSubmit = (data) => {
+    data.description = description;
+
+    setLoading(true);
     updateUser(data, user._id, token)
       .then((res) => {
         dispatch({
@@ -64,10 +73,12 @@ function EditProfile() {
           payload: res.data,
         });
         dispatch(setMessage("Update Profile Success!", "success"));
+        setLoading(false);
       })
       .catch((err) => {
         err.response.data.msg &&
           dispatch(setMessage(err.response.data.msg, "error"));
+        setLoading(false);
       });
   };
 
@@ -152,7 +163,7 @@ function EditProfile() {
             </Grid>
           </Grid>
 
-          <Grid item container alignItems="center">
+          {/* <Grid item container alignItems="center">
             <Grid item xs={4}>
               <Typography className={classes.left}>Description</Typography>
             </Grid>
@@ -168,6 +179,18 @@ function EditProfile() {
                 multiline
                 rows={4}
                 control={control}
+              />
+            </Grid>
+          </Grid> */}
+
+          <Grid item container alignItems="center">
+            <Grid item xs={4}>
+              <Typography className={classes.left}>Description 2</Typography>
+            </Grid>
+            <Grid item xs={8}>
+              <SimpleEditor
+                data={user.description}
+                setDescription={setDescription}
               />
             </Grid>
           </Grid>
@@ -250,7 +273,7 @@ function EditProfile() {
             <Grid item xs={4} />
             <Grid item xs={8}>
               <Button
-                style={{ width: "100px" }}
+                style={{ width: "130px" }}
                 variant="contained"
                 color="primary"
                 type="submit"
