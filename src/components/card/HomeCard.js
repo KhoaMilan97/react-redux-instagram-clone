@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -20,8 +20,13 @@ import Divider from "@material-ui/core/Divider";
 import { Button, CardMedia } from "@material-ui/core";
 
 import SimpleSlider from "./SimpleSlider";
-
 import CardAction from "./CardAction";
+import CommentHomeCard from "../CommentHomeCard";
+import {
+  createComment,
+  getComment,
+  getCommentCount,
+} from "../../functions/comment";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -32,10 +37,11 @@ const useStyles = makeStyles((theme) => ({
     paddingBottom: "14px",
   },
   media: {
-    paddingTop: "56.25%", // 16:9
-    minHeight: "600px",
-    height: "100%",
-    objectFit: "cover",
+    // paddingTop: "56.25%", // 16:9
+    paddingTop: "125%",
+    width: "100%",
+    height: 0,
+    backgroundSize: "100% auto",
   },
 
   avatar: {
@@ -64,13 +70,63 @@ const useStyles = makeStyles((theme) => ({
   input: {
     padding: "10px 16px",
   },
+  link: {
+    color: "#8e8e8e",
+    fontSize: "14px",
+  },
 }));
 
 export default function HomeCard({ post }) {
-  const classes = useStyles();
   const [postCard, setPostCard] = useState(post);
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+  const [totalComment, setTotalComment] = useState(0);
 
   const auth = useSelector((state) => state.auth);
+
+  const classes = useStyles();
+
+  const getPostComment = useCallback(() => {
+    getComment(post._id, auth.token)
+      .then((res) => {
+        if (res.data) {
+          setComments(res.data);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [post._id, auth.token]);
+
+  const getPostCommentCount = useCallback(() => {
+    getCommentCount(post._id, auth.token).then((res) =>
+      setTotalComment(res.data)
+    );
+  }, [post._id, auth.token]);
+
+  useEffect(() => {
+    getPostComment();
+    getPostCommentCount();
+  }, [getPostComment, getPostCommentCount]);
+
+  const handleCreateComment = () => {
+    createComment(
+      {
+        username: auth.user.username,
+        content: comment,
+        post_id: post._id,
+      },
+      auth.token
+    )
+      .then((res) => {
+        getPostComment();
+        getPostCommentCount();
+        setComment("");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   return (
     <Card variant="outlined" className={classes.root}>
@@ -120,6 +176,20 @@ export default function HomeCard({ post }) {
           </span>{" "}
           {postCard.title}
         </Typography>
+        {totalComment > 0 && (
+          <Typography
+            className={classes.link}
+            component={Link}
+            to={`/post/${postCard._id}`}
+          >
+            View all {totalComment} comments
+          </Typography>
+        )}
+
+        {comments.length > 0 &&
+          comments.map((comment) => (
+            <CommentHomeCard key={comment._id} comment={comment} />
+          ))}
         <Typography className={classes.time}>
           {moment(postCard.createdAt).fromNow()}
         </Typography>
@@ -132,13 +202,16 @@ export default function HomeCard({ post }) {
           disableUnderline
           className={classes.input}
           placeholder="Add a comment..."
+          onChange={(e) => setComment(e.target.value)}
+          value={comment}
           endAdornment={
             <InputAdornment position="end">
               <Button
                 className={classes.send}
                 disableRipple
                 style={{ paddingRight: 0 }}
-                disabled
+                onClick={handleCreateComment}
+                disabled={comment.length < 1}
               >
                 Post
               </Button>

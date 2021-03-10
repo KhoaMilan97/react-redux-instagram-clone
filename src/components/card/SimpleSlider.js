@@ -12,9 +12,11 @@ import "slick-carousel/slick/slick-theme.css";
 
 const useStyles = makeStyles((theme) => ({
   media: {
-    paddingTop: "56.25%", // 16:9
-    minHeight: "600px",
-    height: "100%",
+    // paddingTop: "56.25%", // 16:9
+    paddingTop: "125%",
+    width: "100%",
+    height: 0,
+    backgroundSize: "100% auto",
 
     "&:focus": {
       border: "none",

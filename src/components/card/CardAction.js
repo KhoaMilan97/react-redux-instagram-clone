@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useHistory, useLocation } from "react-router-dom";
 
 import CardActions from "@material-ui/core/CardActions";
 import IconButton from "@material-ui/core/IconButton";
@@ -31,10 +32,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function CardAction(props) {
+function CardAction(props, ref) {
   const classes = useStyles();
-  const { post, setPost, auth } = props;
+  const { post, setPost, auth, handleFocus } = props;
   const [double, setDouble] = useState(false);
+  const history = useHistory();
+  const location = useLocation();
 
   const userIsLiked = post.likes.some((like) => like === auth.user._id);
 
@@ -66,6 +69,14 @@ function CardAction(props) {
       });
   };
 
+  const handleCommentAction = () => {
+    if (location.pathname === "/") {
+      history.push(`/post/${post._id}`);
+    } else {
+      handleFocus();
+    }
+  };
+
   return (
     <>
       <CardActions disableSpacing>
@@ -89,7 +100,11 @@ function CardAction(props) {
           </IconButton>
         )}
 
-        <IconButton className={classes.icon} aria-label="comment">
+        <IconButton
+          onClick={handleCommentAction}
+          className={classes.icon}
+          aria-label="comment"
+        >
           <ModeCommentOutlinedIcon />
         </IconButton>
         <IconButton className={classes.icon} aria-label="share">

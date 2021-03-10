@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import moment from "moment";
@@ -23,6 +23,7 @@ import { makeStyles } from "@material-ui/core/styles";
 
 import SimpleSlider from "../components/card/SimpleSlider";
 import { getSinglePost, removePosts } from "../functions/post";
+import { getPostComments } from "../functions/comment";
 import { setMessage } from "../redux/actions/messageAction";
 import Spinner from "../components/loading/Spinner";
 import ConfirmModal from "../components/modal/ConfirmModal";
@@ -41,10 +42,11 @@ const useStyles = makeStyles((theme) => ({
     padding: "15px 0 15px 15px",
   },
   media: {
-    paddingTop: "56.25%", // 16:9
-    minHeight: "600px",
-    height: "100%",
-
+    // paddingTop: "56.25%", // 16:9
+    paddingTop: "125%",
+    width: "100%",
+    height: 0,
+    backgroundSize: "100% auto",
     "&:focus": {
       border: "none",
       outline: "none",
@@ -79,16 +81,23 @@ function PostDetail() {
   const [post, setPost] = useState("");
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [page, setPage] = useState(1);
 
   const history = useHistory();
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
   const classes = useStyles();
   const { id } = useParams();
+  const commentRef = useRef();
 
   const checkUserIsFollow = (id) => {
     return auth.user.following.some((item) => item._id === id);
   };
+
+  const getComments = useCallback(() => {
+    getPostComments(id, page, auth.token).then((res) => console.log(res.data));
+  }, [id, page, auth.token]);
 
   const getPost = useCallback(() => {
     setLoading(true);
@@ -105,7 +114,8 @@ function PostDetail() {
 
   useEffect(() => {
     getPost();
-  }, [getPost]);
+    getComments();
+  }, [getPost, getComments]);
 
   const handleRemovePost = () => {
     removePosts(id, auth.token)
@@ -118,6 +128,10 @@ function PostDetail() {
       });
   };
 
+  const handleFocus = (event) => {
+    commentRef.current.focus();
+  };
+
   if (loading) {
     return <Spinner pending={loading} />;
   }
@@ -125,7 +139,7 @@ function PostDetail() {
   return (
     <Container maxWidth="md">
       <Grid container component={Paper} variant="outlined" square>
-        <Grid item container justify="flex-end" md={7}>
+        <Grid item container justify="flex-end" sm={7}>
           <Card className={classes.card} variant="outlined">
             {post.images?.length > 1 ? (
               <SimpleSlider images={post.images} bottom="10px" color="white" />
@@ -138,7 +152,7 @@ function PostDetail() {
             )}
           </Card>
         </Grid>
-        <Grid item container direction="column" md={5}>
+        <Grid item container direction="column" sm={5}>
           <Grid className={classes.rightBox} item container alignItems="center">
             <Avatar
               src={post.postedBy?.avatar.url}
@@ -218,7 +232,12 @@ function PostDetail() {
                   along with the mussels, if you like.
                 </Typography>
               </CardContent>
-              <CardAction post={post} setPost={setPost} auth={auth} />
+              <CardAction
+                post={post}
+                setPost={setPost}
+                auth={auth}
+                handleFocus={handleFocus}
+              />
               <div style={{ padding: "5px 14px" }}>
                 <Typography>
                   {post.likes.length} {post.likes.length > 1 ? "likes" : "like"}
@@ -235,6 +254,7 @@ function PostDetail() {
                   disableUnderline
                   className={classes.input}
                   placeholder="Add a comment..."
+                  inputRef={commentRef}
                   endAdornment={
                     <InputAdornment position="end">
                       <Button

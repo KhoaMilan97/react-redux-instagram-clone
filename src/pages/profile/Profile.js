@@ -302,7 +302,7 @@ function Profile() {
         </Grid>
       </Grid>
       <Grid container style={{ marginTop: 30 }}>
-        <Paper className={classes.root}>
+        <Paper className={classes.root} variant="outlined">
           <Tabs
             value={value}
             classes={{
