@@ -49,7 +49,6 @@ export const loginUserAction = (data) => async (dispatch) => {
       type: actionTypes.LOADING,
       payload: false,
     });
-    history.push("/");
   } catch (err) {
     dispatch(loginFail());
     dispatch({
@@ -75,7 +74,6 @@ export const registerAction = (data) => async (dispatch) => {
       type: actionTypes.LOADING,
       payload: false,
     });
-    history.push("/");
   } catch (err) {
     dispatch(registerFail());
     dispatch({

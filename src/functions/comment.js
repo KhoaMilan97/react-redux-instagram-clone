@@ -15,7 +15,17 @@ export const getCommentCount = async (id, token) =>
     headers: { Authorization: token },
   });
 
-export const getPostComments = async (id, page, token) =>
-  await axios.get(`/api/comments/${id}?page=${page}`, {
+export const getPostComments = async (id, limit, token) =>
+  await axios.get(`/api/comments/${id}?limit=${limit}`, {
+    headers: { Authorization: token },
+  });
+
+export const likeComment = async (id, data, token) =>
+  await axios.post(`/api/like-comment/${id}`, data, {
+    headers: { Authorization: token },
+  });
+
+export const unLikeComment = async (id, data, token) =>
+  await axios.post(`/api/unlike-comment/${id}`, data, {
     headers: { Authorization: token },
   });

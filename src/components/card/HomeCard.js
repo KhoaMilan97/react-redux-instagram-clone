@@ -21,7 +21,7 @@ import { Button, CardMedia } from "@material-ui/core";
 
 import SimpleSlider from "./SimpleSlider";
 import CardAction from "./CardAction";
-import CommentHomeCard from "../CommentHomeCard";
+import CommentHomeCard from "../comments/CommentHomeCard";
 import {
   createComment,
   getComment,
@@ -112,7 +112,7 @@ export default function HomeCard({ post }) {
   const handleCreateComment = () => {
     createComment(
       {
-        username: auth.user.username,
+        user: auth.user._id,
         content: comment,
         post_id: post._id,
       },

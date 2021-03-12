@@ -14,7 +14,7 @@ function CommentHomeCard({ comment }) {
       <List style={{ paddingTop: 0, paddingBottom: 0 }}>
         <ListItem style={{ paddingTop: 0, paddingBottom: 0 }} disableGutters>
           <Box textAlign="right" style={{ paddingRight: 5, fontSize: "14px" }}>
-            {comment.username}
+            {comment.user.username}
           </Box>
           <ListItemText
             secondaryTypographyProps={{ align: "left" }}

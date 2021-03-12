@@ -18,16 +18,21 @@ import {
   FormControl,
   InputAdornment,
   Input,
+  useMediaQuery,
+  Hidden,
+  IconButton,
 } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, useTheme } from "@material-ui/core/styles";
+import AddCircleOutlineIcon from "@material-ui/icons/AddCircleOutline";
 
 import SimpleSlider from "../components/card/SimpleSlider";
 import { getSinglePost, removePosts } from "../functions/post";
-import { getPostComments } from "../functions/comment";
+import { getPostComments, getCommentCount } from "../functions/comment";
 import { setMessage } from "../redux/actions/messageAction";
 import Spinner from "../components/loading/Spinner";
 import ConfirmModal from "../components/modal/ConfirmModal";
 import CardAction from "../components/card/CardAction";
+import CommentPost from "../components/comments/CommentPost";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -46,6 +51,7 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: "125%",
     width: "100%",
     height: 0,
+    minHeight: "450px",
     backgroundSize: "100% auto",
     "&:focus": {
       border: "none",
@@ -75,6 +81,23 @@ const useStyles = makeStyles((theme) => ({
     marginTop: "5px",
     lineHeight: "18px",
   },
+  commentCard: {
+    borderWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    maxHeight: "592px",
+    width: "100%",
+    [theme.breakpoints.down("md")]: {
+      width: "100%",
+    },
+  },
+  cardContent: {
+    "&::-webkit-scrollbar": {
+      width: 0 /* Remove scrollbar space */,
+      background: "transparent" /* Optional: just make scrollbar invisible */,
+    },
+  },
 }));
 
 function PostDetail() {
@@ -82,7 +105,8 @@ function PostDetail() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [comments, setComments] = useState([]);
-  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(12);
+  const [totalCmt, setTotalCmt] = useState(0);
 
   const history = useHistory();
   const dispatch = useDispatch();
@@ -90,14 +114,18 @@ function PostDetail() {
   const classes = useStyles();
   const { id } = useParams();
   const commentRef = useRef();
+  const theme = useTheme();
+  const matchesMD = useMediaQuery(theme.breakpoints.down("md"));
 
   const checkUserIsFollow = (id) => {
     return auth.user.following.some((item) => item._id === id);
   };
 
   const getComments = useCallback(() => {
-    getPostComments(id, page, auth.token).then((res) => console.log(res.data));
-  }, [id, page, auth.token]);
+    getPostComments(id, limit, auth.token)
+      .then((res) => setComments(res.data))
+      .catch((err) => console.log(err));
+  }, [id, limit, auth.token]);
 
   const getPost = useCallback(() => {
     setLoading(true);
@@ -113,9 +141,16 @@ function PostDetail() {
   }, [id, auth.token]);
 
   useEffect(() => {
-    getPost();
     getComments();
-  }, [getPost, getComments]);
+  }, [getComments]);
+
+  useEffect(() => {
+    getPost();
+  }, [getPost]);
+
+  useEffect(() => {
+    getCommentCount(id, auth.token).then((res) => setTotalCmt(res.data + 2));
+  }, [id, auth.token]);
 
   const handleRemovePost = () => {
     removePosts(id, auth.token)
@@ -132,61 +167,88 @@ function PostDetail() {
     commentRef.current.focus();
   };
 
+  const handleLoadMoreComment = () => {
+    setLimit(limit + limit);
+  };
+
+  const titleCard = (
+    <Grid className={classes.rightBox} item container alignItems="center">
+      <Avatar
+        src={post.postedBy?.avatar.url}
+        alt="avatar"
+        component={Link}
+        to={`/${post.postedBy?.username}`}
+      />
+      <Typography
+        component={Link}
+        style={{ color: "inherit" }}
+        to={`/${post.postedBy?.username}`}
+        className={classes.username}
+      >
+        {post.postedBy?.username}
+      </Typography>
+      {post.postedBy?._id === auth.user._id ? (
+        <div style={{ flex: "1", textAlign: "right" }}>
+          <Button
+            color="primary"
+            component={Link}
+            to={`/post/edit/${post._id}`}
+          >
+            Edit
+          </Button>
+          <Button color="secondary" onClick={() => setOpen(true)}>
+            Delete
+          </Button>
+        </div>
+      ) : checkUserIsFollow(post.postedBy?._id) ? (
+        <Button>Following</Button>
+      ) : (
+        <Button>Follow</Button>
+      )}
+    </Grid>
+  );
+
   if (loading) {
     return <Spinner pending={loading} />;
   }
 
   return (
     <Container maxWidth="md">
-      <Grid container component={Paper} variant="outlined" square>
-        <Grid item container justify="flex-end" sm={7}>
-          <Card className={classes.card} variant="outlined">
-            {post.images?.length > 1 ? (
-              <SimpleSlider images={post.images} bottom="10px" color="white" />
-            ) : (
-              <CardMedia
-                image={post.images[0]?.url}
-                title="slide"
-                className={classes.media}
-              />
-            )}
-          </Card>
-        </Grid>
-        <Grid item container direction="column" sm={5}>
-          <Grid className={classes.rightBox} item container alignItems="center">
-            <Avatar
-              src={post.postedBy?.avatar.url}
-              alt="avatar"
-              component={Link}
-              to={`/${post.postedBy?.username}`}
-            />
-            <Typography
-              component={Link}
-              style={{ color: "inherit" }}
-              to={`/${post.postedBy?.username}`}
-              className={classes.username}
-            >
-              {post.postedBy?.username}
-            </Typography>
-            {post.postedBy?._id === auth.user._id ? (
-              <div style={{ flex: "1", textAlign: "right" }}>
-                <Button
-                  color="primary"
-                  component={Link}
-                  to={`/post/edit/${post._id}`}
-                >
-                  Edit
-                </Button>
-                <Button color="secondary" onClick={() => setOpen(true)}>
-                  Delete
-                </Button>
-              </div>
-            ) : checkUserIsFollow(post.postedBy?._id) ? (
-              <Button>Following</Button>
-            ) : (
-              <Button>Follow</Button>
-            )}
+      <Grid
+        container
+        component={Paper}
+        variant="outlined"
+        alignItems="stretch"
+        square
+      >
+        <Grid
+          item
+          container
+          direction={matchesMD ? "column" : undefined}
+          justify="flex-end"
+          md={7}
+        >
+          <Hidden mdUp>{titleCard}</Hidden>
+          <Grid item container>
+            <Card className={classes.card} variant="outlined">
+              {post.images?.length > 1 ? (
+                <SimpleSlider
+                  images={post.images}
+                  bottom="10px"
+                  color="white"
+                />
+              ) : (
+                <CardMedia
+                  image={post.images[0]?.url}
+                  title="slide"
+                  className={classes.media}
+                />
+              )}
+            </Card>
           </Grid>
+        </Grid>
+        <Grid item container direction="column" md={5}>
+          <Hidden smDown>{titleCard}</Hidden>
           <Divider />
 
           <Grid
@@ -196,15 +258,7 @@ function PostDetail() {
               flex: 1,
             }}
           >
-            <Card
-              variant="outlined"
-              style={{
-                borderWidth: 0,
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-              }}
-            >
+            <Card className={classes.commentCard} variant="outlined">
               <CardHeader
                 avatar={
                   <Avatar
@@ -216,21 +270,37 @@ function PostDetail() {
                   />
                 }
                 title={
-                  <Link
-                    style={{ color: "inherit" }}
-                    to={`/${post.postedBy?.username}`}
-                  >
-                    {post.postedBy?.username}
-                  </Link>
+                  <>
+                    <Link
+                      style={{ color: "inherit" }}
+                      to={`/${post.postedBy?.username}`}
+                    >
+                      {post.postedBy?.username}
+                    </Link>{" "}
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      component="span"
+                    >
+                      {post.title}
+                    </Typography>
+                  </>
                 }
-                subheader={post.title}
+                subheader={moment(post.createdAt).fromNow()}
               />
-              <CardContent style={{ flexGrow: 1 }}>
-                <Typography variant="body2" color="textSecondary" component="p">
-                  This impressive paella is a perfect party dish and a fun meal
-                  to cook together with your guests. Add 1 cup of frozen peas
-                  along with the mussels, if you like.
-                </Typography>
+              <CardContent
+                className={classes.cardContent}
+                style={{ flexGrow: 1, overflowY: "scroll" }}
+              >
+                <CommentPost comments={comments} />
+                {totalCmt > limit && (
+                  <IconButton
+                    onClick={handleLoadMoreComment}
+                    style={{ display: "block", margin: "0 auto" }}
+                  >
+                    <AddCircleOutlineIcon />
+                  </IconButton>
+                )}
               </CardContent>
               <CardAction
                 post={post}
