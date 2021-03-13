@@ -21,13 +21,18 @@ import {
   useMediaQuery,
   Hidden,
   IconButton,
+  CircularProgress,
 } from "@material-ui/core";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import AddCircleOutlineIcon from "@material-ui/icons/AddCircleOutline";
 
 import SimpleSlider from "../components/card/SimpleSlider";
 import { getSinglePost, removePosts } from "../functions/post";
-import { getPostComments, getCommentCount } from "../functions/comment";
+import {
+  getPostComments,
+  getCommentCount,
+  createComment,
+} from "../functions/comment";
 import { setMessage } from "../redux/actions/messageAction";
 import Spinner from "../components/loading/Spinner";
 import ConfirmModal from "../components/modal/ConfirmModal";
@@ -107,6 +112,14 @@ function PostDetail() {
   const [comments, setComments] = useState([]);
   const [limit, setLimit] = useState(12);
   const [totalCmt, setTotalCmt] = useState(0);
+  const [comment, setComment] = useState("");
+  const [cmtLoading, setCmtLoading] = useState(false);
+  const [replyCmt, setReplyCmnt] = useState({
+    username_comment: "",
+    user_rep_id: "",
+    comment_id: "",
+  });
+  const { username_comment, user_rep_id, comment_id } = replyCmt;
 
   const history = useHistory();
   const dispatch = useDispatch();
@@ -120,6 +133,12 @@ function PostDetail() {
   const checkUserIsFollow = (id) => {
     return auth.user.following.some((item) => item._id === id);
   };
+
+  useEffect(() => {
+    if (username_comment) {
+      commentRef.current.value = `@${username_comment} `;
+    }
+  }, [username_comment]);
 
   const getComments = useCallback(() => {
     getPostComments(id, limit, auth.token)
@@ -149,7 +168,7 @@ function PostDetail() {
   }, [getPost]);
 
   useEffect(() => {
-    getCommentCount(id, auth.token).then((res) => setTotalCmt(res.data + 2));
+    getCommentCount(id, auth.token).then((res) => setTotalCmt(res.data));
   }, [id, auth.token]);
 
   const handleRemovePost = () => {
@@ -160,6 +179,27 @@ function PostDetail() {
       })
       .catch((err) => {
         console.log(err);
+      });
+  };
+
+  const handleCreateComment = () => {
+    setCmtLoading(true);
+    createComment(
+      {
+        user: auth.user._id,
+        content: comment,
+        post_id: post._id,
+      },
+      auth.token
+    )
+      .then((res) => {
+        getComments();
+        setComment("");
+        setCmtLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setCmtLoading(false);
       });
   };
 
@@ -292,7 +332,11 @@ function PostDetail() {
                 className={classes.cardContent}
                 style={{ flexGrow: 1, overflowY: "scroll" }}
               >
-                <CommentPost comments={comments} />
+                <CommentPost
+                  comments={comments}
+                  handleFocus={handleFocus}
+                  setReplyCmnt={setReplyCmnt}
+                />
                 {totalCmt > limit && (
                   <IconButton
                     onClick={handleLoadMoreComment}
@@ -325,15 +369,22 @@ function PostDetail() {
                   className={classes.input}
                   placeholder="Add a comment..."
                   inputRef={commentRef}
+                  onChange={(e) => setComment(e.target.value)}
+                  value={comment}
                   endAdornment={
                     <InputAdornment position="end">
                       <Button
                         className={classes.send}
                         disableRipple
+                        onClick={handleCreateComment}
                         style={{ paddingRight: 0 }}
-                        disabled
+                        disabled={comment.length < 1}
                       >
-                        Post
+                        {cmtLoading ? (
+                          <CircularProgress color="primary" size={20} />
+                        ) : (
+                          "Post"
+                        )}
                       </Button>
                     </InputAdornment>
                   }

@@ -29,3 +29,8 @@ export const unLikeComment = async (id, data, token) =>
   await axios.post(`/api/unlike-comment/${id}`, data, {
     headers: { Authorization: token },
   });
+
+export const replyComment = async (data, token) =>
+  await axios.post(`/api/reply-comment`, data, {
+    headers: { Authorization: token },
+  });

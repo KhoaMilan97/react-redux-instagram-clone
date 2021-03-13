@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function CommentPostList({ comment }) {
+function CommentPostList({ comment, handleFocus, setReplyCmnt }) {
   const [commentPost, setCommentPost] = useState(comment);
   const [loading, setLoading] = useState(false);
   const classes = useStyles();
@@ -59,6 +59,20 @@ function CommentPostList({ comment }) {
         console.log(err);
         setLoading(false);
       });
+  };
+
+  //  username_comment: "",
+  //  user_rep_id: "",
+  //  content: "",
+  //  comment_id: "",
+
+  const handleReply = () => {
+    handleFocus();
+    setReplyCmnt({
+      username_comment: comment.user?.username,
+      user_rep_id: user._id,
+      comment_id: comment._id,
+    });
   };
 
   return (
@@ -106,6 +120,7 @@ function CommentPostList({ comment }) {
                 disableFocusRipple
                 disableRipple
                 className={classes.reply}
+                onClick={handleReply}
               >
                 Reply
               </Button>

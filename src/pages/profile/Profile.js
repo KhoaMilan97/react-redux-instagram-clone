@@ -13,9 +13,9 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import Paper from "@material-ui/core/Paper";
 import ViewComfyIcon from "@material-ui/icons/ViewComfy";
-import MovieIcon from "@material-ui/icons/Movie";
+
 import BookmarkBorderOutlinedIcon from "@material-ui/icons/BookmarkBorderOutlined";
-import LocalOfferIcon from "@material-ui/icons/LocalOffer";
+
 import CircularProgress from "@material-ui/core/CircularProgress";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import PersonIcon from "@material-ui/icons/Person";
@@ -30,6 +30,7 @@ import PostGallerry from "./PostGallerry";
 import FollowModal from "../../components/modal/FollowModal";
 import { getPosts } from "../../functions/post";
 import SingleLoading from "../../components/loading/SingleLoading";
+import ListFollowModal from "../../components/modal/ListFollowModal";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -79,6 +80,14 @@ const useStyles = makeStyles((theme) => ({
       marginBottom: "5px",
     },
   },
+  muiLink: {
+    cursor: "pointer",
+    textDecorationLine: "none",
+    color: "inherit",
+    "&:hover": {
+      textDecorationLine: "none",
+    },
+  },
 }));
 
 function Profile() {
@@ -89,6 +98,9 @@ function Profile() {
   const [open, setOpen] = useState(false);
   const [posts, setPosts] = useState([]);
   const [postLoading, setPostLoading] = useState(false);
+  const [openListFollow, setOpenListFollow] = useState(false);
+  const [title, setTitle] = useState("");
+  const [listFollow, setListFollow] = useState([]);
 
   const classes = useStyles();
   const { username } = useParams();
@@ -106,17 +118,22 @@ function Profile() {
   };
 
   useEffect(() => {
-    setLoading(true);
-    getUser(username)
-      .then((res) => {
-        setUser(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-      });
-  }, [username]);
+    if (username === auth.user.username) {
+      setUser(auth.user);
+      setLoading(false);
+    } else {
+      //setLoading(true);
+      getUser(username)
+        .then((res) => {
+          setUser(res.data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.log(err);
+          setLoading(false);
+        });
+    }
+  }, [username, auth.user]);
 
   useEffect(() => {
     if (user._id) {
@@ -132,6 +149,14 @@ function Profile() {
         });
     }
   }, [user._id, auth.token]);
+
+  useEffect(() => {
+    if (title === "Followers" && openListFollow) {
+      setListFollow(user.followers);
+    } else if (title === "Following" && openListFollow) {
+      setListFollow(user.following);
+    }
+  }, [title, openListFollow, user.followers, user.following]);
 
   if (loading) {
     return <Spinner pending={loading} />;
@@ -177,6 +202,16 @@ function Profile() {
 
   const checkUserIsFollow = (id) => {
     return auth.user.following.some((item) => item._id === id);
+  };
+
+  const handleClickFollowOpen = () => {
+    setTitle("Followers");
+    setOpenListFollow(true);
+  };
+
+  const handleClickFollowingOpen = () => {
+    setTitle("Following");
+    setOpenListFollow(true);
   };
 
   const renderAction = () => {
@@ -234,141 +269,139 @@ function Profile() {
   };
 
   return (
-    <Container maxWidth="md">
-      <Grid container justify={matchesSM ? "center" : undefined}>
-        <Grid item container sm={4} justify="center">
-          {user.avatar?.url ? (
-            <Avatar
-              alt="profile picture"
-              src={user.avatar?.url}
-              className={classes.avatar}
-            />
-          ) : (
-            <Avatar alt="profile picture" className={classes.avatar} />
-          )}
-        </Grid>
-        <Grid item sm={8}>
-          <Typography className={classes.name}>
-            {user.username} {renderAction()}
-          </Typography>
-          <FollowModal
-            user={user}
-            open={open}
-            setOpen={setOpen}
-            handleUnFollowAction={handleUnFollowAction}
-          />
+    <>
+      <ListFollowModal
+        open={openListFollow}
+        setOpen={setOpenListFollow}
+        title={title}
+        list={listFollow}
+      />
 
-          <Grid container style={{ marginTop: 10 }}>
-            <Grid item>
-              <Typography>
-                <span className={classes.number}>0</span> posts
-              </Typography>
-            </Grid>
-            <Grid item style={{ margin: "0 50px" }}>
-              <Typography>
-                <span className={classes.number}>{user.followers.length}</span>{" "}
-                followers
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Typography>
-                <span className={classes.number}>{user.following.length}</span>{" "}
-                following
-              </Typography>
-            </Grid>
-          </Grid>
-          <Typography style={{ marginTop: "15px", fontWeight: 600 }}>
-            {user.fullname}
-            {user.phoneNumber && (
-              <span style={{ color: "#3f51b5" }}>
-                {" - "}
-                {user.phoneNumber}
-              </span>
+      <Container maxWidth="md">
+        <Grid container justify={matchesSM ? "center" : undefined}>
+          <Grid item container sm={4} justify="center">
+            {user.avatar?.url ? (
+              <Avatar
+                alt="profile picture"
+                src={user.avatar?.url}
+                className={classes.avatar}
+              />
+            ) : (
+              <Avatar alt="profile picture" className={classes.avatar} />
             )}
-          </Typography>
-          <div className={classes.story}>
-            {ReactHtmlParser(user.description)}
-          </div>
-          {user.website && (
-            <MuiLink
-              target="_blank"
-              rel="noopener"
-              style={{ fontWeight: 600 }}
-              href={user.website}
-            >
-              {user.website}
-            </MuiLink>
-          )}
-        </Grid>
-      </Grid>
-      <Grid container style={{ marginTop: 30 }}>
-        <Paper className={classes.root} variant="outlined">
-          <Tabs
-            value={value}
-            classes={{
-              indicator: classes.indicator,
-            }}
-            onChange={handleChange}
-            indicatorColor="primary"
-            textColor="primary"
-            centered
-          >
-            <Tab
-              className={classes.tab}
-              label={
-                <div>
-                  <ViewComfyIcon
-                    style={{ verticalAlign: "middle", fontSize: 16 }}
-                  />{" "}
-                  Post
-                </div>
-              }
+          </Grid>
+          <Grid item sm={8}>
+            <Typography className={classes.name}>
+              {user.username} {renderAction()}
+            </Typography>
+            <FollowModal
+              user={user}
+              open={open}
+              setOpen={setOpen}
+              handleUnFollowAction={handleUnFollowAction}
             />
 
-            <Tab
-              className={classes.tab}
-              label={
-                <div>
-                  <MovieIcon
-                    style={{ verticalAlign: "middle", fontSize: 16 }}
-                  />{" "}
-                  IGTV
-                </div>
-              }
-            />
-            <Tab
-              className={classes.tab}
-              label={
-                <div>
-                  <BookmarkBorderOutlinedIcon
-                    style={{ verticalAlign: "middle", fontSize: 16 }}
-                  />{" "}
-                  Saved
-                </div>
-              }
-            />
-            <Tab
-              className={classes.tab}
-              label={
-                <div>
-                  <LocalOfferIcon
-                    style={{ verticalAlign: "middle", fontSize: 16 }}
-                  />{" "}
-                  Tagged
-                </div>
-              }
-            />
-          </Tabs>
-        </Paper>
-      </Grid>
-      {postLoading ? (
-        <SingleLoading pending={postLoading} />
-      ) : posts.length > 0 ? (
-        <PostGallerry posts={posts} />
-      ) : (
-        <Typography>This User No Posts</Typography>
-      )}
-    </Container>
+            <Grid container style={{ marginTop: 10 }}>
+              <Grid item>
+                <Typography>
+                  <span className={classes.number}>{posts.length}</span> posts
+                </Typography>
+              </Grid>
+              <Grid item style={{ margin: "0 50px" }}>
+                <Typography
+                  component={MuiLink}
+                  className={classes.muiLink}
+                  onClick={handleClickFollowOpen}
+                >
+                  <span className={classes.number}>
+                    {user.followers.length}
+                  </span>{" "}
+                  followers
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Typography
+                  component={MuiLink}
+                  className={classes.muiLink}
+                  onClick={handleClickFollowingOpen}
+                >
+                  <span className={classes.number}>
+                    {user.following.length}
+                  </span>{" "}
+                  following
+                </Typography>
+              </Grid>
+            </Grid>
+            <Typography style={{ marginTop: "15px", fontWeight: 600 }}>
+              {user.fullname}
+              {user.phoneNumber && (
+                <span style={{ color: "#3f51b5" }}>
+                  {" - "}
+                  {user.phoneNumber}
+                </span>
+              )}
+            </Typography>
+            <div className={classes.story}>
+              {ReactHtmlParser(user.description)}
+            </div>
+            {user.website && (
+              <MuiLink
+                target="_blank"
+                rel="noopener"
+                style={{ fontWeight: 600 }}
+                href={user.website}
+              >
+                {user.website}
+              </MuiLink>
+            )}
+          </Grid>
+        </Grid>
+        <Grid container style={{ marginTop: 30 }}>
+          <Paper className={classes.root} variant="outlined">
+            <Tabs
+              value={value}
+              classes={{
+                indicator: classes.indicator,
+              }}
+              onChange={handleChange}
+              indicatorColor="primary"
+              textColor="primary"
+              centered
+            >
+              <Tab
+                className={classes.tab}
+                label={
+                  <div>
+                    <ViewComfyIcon
+                      style={{ verticalAlign: "middle", fontSize: 16 }}
+                    />{" "}
+                    Post
+                  </div>
+                }
+              />
+              <Tab
+                className={classes.tab}
+                label={
+                  <div>
+                    <BookmarkBorderOutlinedIcon
+                      style={{ verticalAlign: "middle", fontSize: 16 }}
+                    />{" "}
+                    Saved
+                  </div>
+                }
+              />
+            </Tabs>
+          </Paper>
+        </Grid>
+        {postLoading ? (
+          <SingleLoading pending={postLoading} />
+        ) : posts.length > 0 ? (
+          <PostGallerry posts={posts} />
+        ) : (
+          <Typography>This User No Posts</Typography>
+        )}
+      </Container>
+    </>
   );
 }
 

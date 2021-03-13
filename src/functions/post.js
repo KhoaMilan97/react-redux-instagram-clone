@@ -15,8 +15,8 @@ export const getSinglePost = async (id, token) =>
     headers: { Authorization: token },
   });
 
-export const getFollowerPost = async (id, token) =>
-  await axios.get(`/api/follower-post/${id}`, {
+export const getFollowerPost = async (id, page, token) =>
+  await axios.get(`/api/follower-post/${id}?page=${page}`, {
     headers: { Authorization: token },
   });
 

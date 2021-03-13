@@ -63,7 +63,7 @@ export default function PostGallerry({ posts }) {
               key={post._id}
               cols={1}
             >
-              <img src={post.images[0].url} alt="gird list" />
+              <img src={post.images[0]?.url} alt="gird list" />
               {post.images?.length > 1 && (
                 <GridListTileBar
                   className={classes.titleBar}

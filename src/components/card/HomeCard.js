@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, forwardRef } from "react";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -76,7 +76,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function HomeCard({ post }) {
+const HomeCard = forwardRef((props, ref) => {
+  const { post } = props;
   const [postCard, setPostCard] = useState(post);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
@@ -106,8 +107,11 @@ export default function HomeCard({ post }) {
 
   useEffect(() => {
     getPostComment();
+  }, [getPostComment]);
+
+  useEffect(() => {
     getPostCommentCount();
-  }, [getPostComment, getPostCommentCount]);
+  }, [getPostCommentCount]);
 
   const handleCreateComment = () => {
     createComment(
@@ -129,7 +133,7 @@ export default function HomeCard({ post }) {
   };
 
   return (
-    <Card variant="outlined" className={classes.root}>
+    <Card ref={ref} variant="outlined" className={classes.root}>
       <CardHeader
         avatar={
           <Avatar
@@ -176,20 +180,17 @@ export default function HomeCard({ post }) {
           </span>{" "}
           {postCard.title}
         </Typography>
-        {totalComment > 0 && (
+        {totalComment > 2 && (
           <Typography
             className={classes.link}
             component={Link}
             to={`/post/${postCard._id}`}
           >
-            View all {totalComment} comments
+            View all {totalComment - 2} comments
           </Typography>
         )}
 
-        {comments.length > 0 &&
-          comments.map((comment) => (
-            <CommentHomeCard key={comment._id} comment={comment} />
-          ))}
+        {comments.length > 0 && <CommentHomeCard comments={comments} />}
         <Typography className={classes.time}>
           {moment(postCard.createdAt).fromNow()}
         </Typography>
@@ -221,4 +222,6 @@ export default function HomeCard({ post }) {
       </FormControl>
     </Card>
   );
-}
+});
+
+export default HomeCard;

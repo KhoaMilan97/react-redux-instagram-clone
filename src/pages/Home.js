@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
+//import InfiniteScroll from "react-infinite-scroll-component";
 
 import Container from "@material-ui/core/Container";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
@@ -8,7 +9,7 @@ import Grid from "@material-ui/core/Grid";
 import Avatar from "@material-ui/core/Avatar";
 import MuiLink from "@material-ui/core/Link";
 import Typography from "@material-ui/core/Typography";
-import { Hidden } from "@material-ui/core";
+import { CircularProgress, Hidden } from "@material-ui/core";
 
 import HomeCard from "../components/card/HomeCard";
 import CreatePostForm from "../components/form/CreatePostForm";
@@ -51,21 +52,43 @@ const Home = () => {
   const matchesSM = useMediaQuery(theme.breakpoints.down("sm"));
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingPost, setLoadingPost] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
+
   const auth = useSelector((state) => state.auth);
   const { user, token } = auth;
+  const observer = useRef();
 
   useEffect(() => {
-    setLoading(true);
-    getFollowerPost(user._id, token)
+    setLoadingPost(true);
+    getFollowerPost(user._id, page, token)
       .then((res) => {
-        setPosts(res.data);
+        setPosts((post) => [...post, ...res.data]);
+        setHasMore(res.data.length > 0);
         setLoading(false);
+        setLoadingPost(false);
       })
       .catch((err) => {
         console.log(err);
         setLoading(false);
+        setLoadingPost(false);
       });
-  }, [user._id, token]);
+  }, [user._id, token, page]);
+
+  const lastPostElementRef = useCallback(
+    (node) => {
+      if (loadingPost) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prevPageNumber) => prevPageNumber + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loadingPost, hasMore]
+  );
 
   if (loading) {
     return <Spinner pending={loading} />;
@@ -82,9 +105,24 @@ const Home = () => {
             style={{ paddingRight: matchesSM ? 0 : 30 }}
           >
             <CreatePostForm />
-            {posts.map((post) => (
-              <HomeCard key={post._id} post={post} />
-            ))}
+
+            {posts.map((post, index) => {
+              if (posts.length === index + 1) {
+                return (
+                  <HomeCard
+                    ref={lastPostElementRef}
+                    key={post._id}
+                    post={post}
+                  />
+                );
+              }
+              return <HomeCard key={post._id} post={post} />;
+            })}
+            {loadingPost && (
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <CircularProgress size={25} />
+              </div>
+            )}
           </Grid>
           <Hidden smDown>
             <Grid item md={4}>
@@ -99,10 +137,10 @@ const Home = () => {
                   </Grid>
                   <Grid item container alignItems="center" md>
                     <Typography className={classes.name} variant="body2">
-                      khoamilan
+                      {user.username}
                     </Typography>
                     <Typography style={{ color: "#8e8e8e" }}>
-                      Khoa Milan
+                      {user.fullname}
                     </Typography>
                   </Grid>
                   {/* <Grid item container alignItems="center" md>
