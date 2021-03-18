@@ -15,8 +15,8 @@ export const getCommentCount = async (id, token) =>
     headers: { Authorization: token },
   });
 
-export const getPostComments = async (id, limit, token) =>
-  await axios.get(`/api/comments/${id}?limit=${limit}`, {
+export const getPostComments = async (id, page, limit, token) =>
+  await axios.get(`/api/comments/${id}?page=${page}&limit=${limit}`, {
     headers: { Authorization: token },
   });
 
@@ -32,5 +32,10 @@ export const unLikeComment = async (id, data, token) =>
 
 export const replyComment = async (data, token) =>
   await axios.post(`/api/reply-comment`, data, {
+    headers: { Authorization: token },
+  });
+
+export const deleteComment = async (id, token) =>
+  await axios.delete(`/api/del-comment/${id}`, {
     headers: { Authorization: token },
   });

@@ -82,6 +82,7 @@ const HomeCard = forwardRef((props, ref) => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const [totalComment, setTotalComment] = useState(0);
+  const [likeCount, setLikeCount] = useState(post.likes.length);
 
   const auth = useSelector((state) => state.auth);
 
@@ -168,11 +169,16 @@ const HomeCard = forwardRef((props, ref) => {
         />
       )}
 
-      <CardAction post={postCard} setPost={setPostCard} auth={auth} />
+      <CardAction
+        post={postCard}
+        setPost={setPostCard}
+        auth={auth}
+        setLikeCount={setLikeCount}
+      />
 
       <CardContent className={classes.cardContent} style={{ paddingTop: 0 }}>
         <Typography>
-          {postCard.likes.length} {postCard.likes.length > 1 ? "likes" : "like"}
+          {likeCount} {likeCount > 1 ? "likes" : "like"}
         </Typography>
         <Typography variant="body2" color="textSecondary" component="p">
           <span style={{ color: "#262626" }}>

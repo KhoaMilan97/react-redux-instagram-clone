@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
 import ListItem from "@material-ui/core/ListItem";
@@ -15,11 +15,17 @@ function ListCommentHomeCard({ comment }) {
   const [commentPost, setCommentPost] = useState(comment);
   const [loading, setLoading] = useState(false);
   const { user, token } = useSelector((state) => state.auth);
+  const [isLiked, setIsLiked] = useState(false);
 
-  const isLiked = commentPost.likes.some((like) => like === user._id);
+  useEffect(() => {
+    const userIsLiked = commentPost.likes.some((like) => like === user._id);
+    if (userIsLiked) setIsLiked(true);
+  }, [user._id, commentPost.likes]);
 
   const handleLikeComment = () => {
+    if (loading) return;
     setLoading(true);
+    setIsLiked(true);
     likeComment(commentPost._id, { id: user._id }, token)
       .then((res) => {
         setCommentPost(res.data);
@@ -32,7 +38,9 @@ function ListCommentHomeCard({ comment }) {
   };
 
   const handleUnLikeComment = () => {
+    if (loading) return;
     setLoading(true);
+    setIsLiked(true);
     unLikeComment(commentPost._id, { id: user._id }, token)
       .then((res) => {
         setCommentPost(res.data);
@@ -63,7 +71,6 @@ function ListCommentHomeCard({ comment }) {
               style={{ padding: "0" }}
               edge="end"
               aria-label="delete"
-              disabled={loading}
             >
               <FavoriteIcon color="secondary" fontSize="small" />
             </IconButton>
@@ -73,7 +80,6 @@ function ListCommentHomeCard({ comment }) {
               style={{ padding: "0" }}
               edge="end"
               aria-label="delete"
-              disabled={loading}
             >
               <FavoriteBorderIcon fontSize="small" />
             </IconButton>

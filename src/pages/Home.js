@@ -129,11 +129,22 @@ const Home = () => {
               <Grid container direction="column">
                 <Grid item container>
                   <Grid item md={3}>
-                    <Avatar
-                      className={classes.avatar}
-                      src={user.avatar.url}
-                      alt="profile picture"
-                    />
+                    {user.avatar?.url &&
+                    !(
+                      Object.keys(user.avatar?.url).length === 0 &&
+                      user.avatar?.url.constructor === Object
+                    ) ? (
+                      <Avatar
+                        className={classes.avatar}
+                        src={user.avatar?.url}
+                        alt="profile picture"
+                      />
+                    ) : (
+                      <Avatar
+                        className={classes.avatar}
+                        alt="profile picture"
+                      />
+                    )}
                   </Grid>
                   <Grid item container alignItems="center" md>
                     <Typography className={classes.name} variant="body2">
@@ -161,11 +172,18 @@ const Home = () => {
                 </Grid>
                 <Grid item container style={{ marginBottom: 10 }}>
                   <Grid item md={2}>
-                    <Avatar
-                      className={classes.avatarSmall}
-                      src={user.avatar.url}
-                      alt="profile picture"
-                    />
+                    {user.avatar?.url ? (
+                      <Avatar
+                        className={classes.avatarSmall}
+                        src={user.avatar?.url}
+                        alt="profile picture"
+                      />
+                    ) : (
+                      <Avatar
+                        className={classes.avatarSmall}
+                        alt="profile picture"
+                      />
+                    )}
                   </Grid>
                   <Grid item container alignItems="center" md>
                     <Typography className={classes.name} variant="body2">

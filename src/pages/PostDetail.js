@@ -28,16 +28,18 @@ import AddCircleOutlineIcon from "@material-ui/icons/AddCircleOutline";
 
 import SimpleSlider from "../components/card/SimpleSlider";
 import { getSinglePost, removePosts } from "../functions/post";
-import {
-  getPostComments,
-  getCommentCount,
-  createComment,
-} from "../functions/comment";
 import { setMessage } from "../redux/actions/messageAction";
+import {
+  getCommentsAction,
+  createCommentAction,
+  getTotalCommentsAction,
+} from "../redux/actions/commentAction";
 import Spinner from "../components/loading/Spinner";
 import ConfirmModal from "../components/modal/ConfirmModal";
 import CardAction from "../components/card/CardAction";
 import CommentPost from "../components/comments/CommentPost";
+import { useScroll } from "../utils/useScroll";
+import PostDetailSkeleton from "../components/loading/PostDetailSkeleton";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -109,48 +111,43 @@ function PostDetail() {
   const [post, setPost] = useState("");
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [comments, setComments] = useState([]);
-  const [limit, setLimit] = useState(12);
-  const [totalCmt, setTotalCmt] = useState(0);
+  const [page, setPage] = useState(1);
   const [comment, setComment] = useState("");
   const [cmtLoading, setCmtLoading] = useState(false);
-  const [replyCmt, setReplyCmnt] = useState({
-    username_comment: "",
-    user_rep_id: "",
-    comment_id: "",
-  });
-  const { username_comment, user_rep_id, comment_id } = replyCmt;
+  const [likeCount, setLikeCount] = useState(0);
 
+  const [executeScroll, elRef] = useScroll();
   const history = useHistory();
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
+  const { comments, status, totalComments, limit } = useSelector(
+    (state) => state.comments
+  );
   const classes = useStyles();
   const { id } = useParams();
   const commentRef = useRef();
   const theme = useTheme();
   const matchesMD = useMediaQuery(theme.breakpoints.down("md"));
+  const limitRef = useRef();
 
   const checkUserIsFollow = (id) => {
     return auth.user.following.some((item) => item._id === id);
   };
 
   useEffect(() => {
-    if (username_comment) {
-      commentRef.current.value = `@${username_comment} `;
-    }
-  }, [username_comment]);
+    limitRef.current = limit;
+  }, [limit]);
 
   const getComments = useCallback(() => {
-    getPostComments(id, limit, auth.token)
-      .then((res) => setComments(res.data))
-      .catch((err) => console.log(err));
-  }, [id, limit, auth.token]);
+    dispatch(getCommentsAction(id, page, limitRef.current, auth.token));
+  }, [id, page, auth.token, dispatch]);
 
   const getPost = useCallback(() => {
     setLoading(true);
     getSinglePost(id, auth.token)
       .then((response) => {
         setPost(response.data.post);
+        setLikeCount(response.data.post.likes.length);
         setLoading(false);
       })
       .catch((err) => {
@@ -168,8 +165,8 @@ function PostDetail() {
   }, [getPost]);
 
   useEffect(() => {
-    getCommentCount(id, auth.token).then((res) => setTotalCmt(res.data));
-  }, [id, auth.token]);
+    dispatch(getTotalCommentsAction(id, auth.token));
+  }, [id, auth.token, dispatch]);
 
   const handleRemovePost = () => {
     removePosts(id, auth.token)
@@ -182,25 +179,17 @@ function PostDetail() {
       });
   };
 
-  const handleCreateComment = () => {
+  const handleCreateComment = async () => {
     setCmtLoading(true);
-    createComment(
-      {
-        user: auth.user._id,
-        content: comment,
-        post_id: post._id,
-      },
-      auth.token
-    )
-      .then((res) => {
-        getComments();
-        setComment("");
-        setCmtLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setCmtLoading(false);
-      });
+    await dispatch(
+      createCommentAction(
+        { user: auth.user._id, content: comment, post_id: post._id },
+        auth.token
+      )
+    );
+    setComment("");
+    setCmtLoading(false);
+    executeScroll();
   };
 
   const handleFocus = (event) => {
@@ -208,7 +197,7 @@ function PostDetail() {
   };
 
   const handleLoadMoreComment = () => {
-    setLimit(limit + limit);
+    setPage((prevPage) => prevPage + 1);
   };
 
   const titleCard = (
@@ -249,7 +238,7 @@ function PostDetail() {
   );
 
   if (loading) {
-    return <Spinner pending={loading} />;
+    return <PostDetailSkeleton />;
   }
 
   return (
@@ -332,12 +321,8 @@ function PostDetail() {
                 className={classes.cardContent}
                 style={{ flexGrow: 1, overflowY: "scroll" }}
               >
-                <CommentPost
-                  comments={comments}
-                  handleFocus={handleFocus}
-                  setReplyCmnt={setReplyCmnt}
-                />
-                {totalCmt > limit && (
+                <CommentPost comments={comments} status={status} ref={elRef} />
+                {totalComments > comments.length && status === "succeeded" && (
                   <IconButton
                     onClick={handleLoadMoreComment}
                     style={{ display: "block", margin: "0 auto" }}
@@ -351,10 +336,11 @@ function PostDetail() {
                 setPost={setPost}
                 auth={auth}
                 handleFocus={handleFocus}
+                setLikeCount={setLikeCount}
               />
               <div style={{ padding: "5px 14px" }}>
                 <Typography>
-                  {post.likes.length} {post.likes.length > 1 ? "likes" : "like"}
+                  {likeCount} {likeCount > 1 ? "likes" : "like"}
                 </Typography>
                 <Typography className={classes.time}>
                   {moment(post.createdAt).fromNow()}
@@ -368,7 +354,7 @@ function PostDetail() {
                   disableUnderline
                   className={classes.input}
                   placeholder="Add a comment..."
-                  inputRef={commentRef}
+                  ref={commentRef}
                   onChange={(e) => setComment(e.target.value)}
                   value={comment}
                   endAdornment={

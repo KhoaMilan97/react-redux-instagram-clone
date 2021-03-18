@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, Switch, useRouteMatch } from "react-router-dom";
 
 import { Container } from "@material-ui/core";
@@ -52,6 +52,14 @@ export default function Accounts() {
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
   let { path, url } = useRouteMatch();
+
+  useEffect(() => {
+    if (window.location.pathname === `${url}/edit`) {
+      setValue(0);
+    } else if (window.location.pathname === `${url}/change-password`) {
+      setValue(1);
+    }
+  }, [url]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);

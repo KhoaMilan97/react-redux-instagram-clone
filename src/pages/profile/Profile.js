@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useRouteMatch, Switch } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import ReactHtmlParser from "react-html-parser";
 
@@ -29,8 +29,9 @@ import { actionTypes } from "../../redux/actions/actionType";
 import PostGallerry from "./PostGallerry";
 import FollowModal from "../../components/modal/FollowModal";
 import { getPosts } from "../../functions/post";
-import SingleLoading from "../../components/loading/SingleLoading";
 import ListFollowModal from "../../components/modal/ListFollowModal";
+import PrivateRoute from "../../utils/privateRoute";
+import SavedPost from "./SavedPost";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -97,10 +98,13 @@ function Profile() {
   const [followLoading, setFollowLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [posts, setPosts] = useState([]);
-  const [postLoading, setPostLoading] = useState(false);
+  const [postLoading, setPostLoading] = useState(true);
   const [openListFollow, setOpenListFollow] = useState(false);
   const [title, setTitle] = useState("");
   const [listFollow, setListFollow] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingPost, setLoadingPost] = useState(false);
 
   const classes = useStyles();
   const { username } = useParams();
@@ -108,6 +112,7 @@ function Profile() {
   const dispatch = useDispatch();
   const theme = useTheme();
   const matchesSM = useMediaQuery(theme.breakpoints.down("sm"));
+  let { path, url } = useRouteMatch();
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -118,11 +123,26 @@ function Profile() {
   };
 
   useEffect(() => {
+    if (window.location.pathname === url) {
+      setValue(0);
+    } else if (window.location.pathname === `${url}/saved/`) {
+      setValue(1);
+    }
+  }, [url]);
+
+  useEffect(() => {
+    setPosts([]);
+    setPage(1);
+    setPostLoading(true);
+    setUser("");
+  }, [username]);
+
+  useEffect(() => {
     if (username === auth.user.username) {
       setUser(auth.user);
       setLoading(false);
     } else {
-      //setLoading(true);
+      setLoading(true);
       getUser(username)
         .then((res) => {
           setUser(res.data);
@@ -137,18 +157,22 @@ function Profile() {
 
   useEffect(() => {
     if (user._id) {
-      setPostLoading(true);
-      getPosts(user._id, auth.token)
+      //setPostLoading(true);
+      setLoadingPost(true);
+      getPosts(user._id, page, auth.token)
         .then((res) => {
-          setPosts(res.data.post);
+          setPosts((prev) => [...new Set([...prev, ...res.data.post])]);
+          setHasMore(res.data.post.length > 0);
           setPostLoading(false);
+          setLoadingPost(false);
         })
         .catch((err) => {
           console.log(err);
           setPostLoading(false);
+          setLoadingPost(false);
         });
     }
-  }, [user._id, auth.token]);
+  }, [user._id, page, auth.token]);
 
   useEffect(() => {
     if (title === "Followers" && openListFollow) {
@@ -370,6 +394,8 @@ function Profile() {
             >
               <Tab
                 className={classes.tab}
+                component={Link}
+                to={`${url}`}
                 label={
                   <div>
                     <ViewComfyIcon
@@ -381,6 +407,8 @@ function Profile() {
               />
               <Tab
                 className={classes.tab}
+                component={Link}
+                to={`${url}/saved/`}
                 label={
                   <div>
                     <BookmarkBorderOutlinedIcon
@@ -393,13 +421,40 @@ function Profile() {
             </Tabs>
           </Paper>
         </Grid>
-        {postLoading ? (
+        {/* {postLoading ? (
           <SingleLoading pending={postLoading} />
         ) : posts.length > 0 ? (
-          <PostGallerry posts={posts} />
+          <PostGallerry
+            posts={posts}
+            setPage={setPage}
+            hasMore={hasMore}
+            loadingPost={loadingPost}
+          />
         ) : (
           <Typography>This User No Posts</Typography>
-        )}
+        )} */}
+        <Switch>
+          <PrivateRoute
+            sensitive
+            exact
+            path={`${path}`}
+            render={() => (
+              <PostGallerry
+                posts={posts}
+                setPage={setPage}
+                hasMore={hasMore}
+                loadingPost={loadingPost}
+                postLoading={postLoading}
+              />
+            )}
+          />
+          <PrivateRoute
+            sensitive
+            exact
+            path={`${path}/saved/`}
+            component={SavedPost}
+          />
+        </Switch>
       </Container>
     </>
   );

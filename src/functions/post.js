@@ -5,8 +5,8 @@ export const createPost = async (data, token) =>
     headers: { Authorization: token },
   });
 
-export const getPosts = async (userid, token) =>
-  await axios.get(`/api/posts/${userid}`, {
+export const getPosts = async (userid, page, token) =>
+  await axios.get(`/api/posts/${userid}/?page=${page}`, {
     headers: { Authorization: token },
   });
 

@@ -76,7 +76,7 @@ function ListItemFollow({ userFollow, handleClose }) {
           <Avatar
             component={Link}
             to={`/${userFollows.username}`}
-            src={userFollows.avatar.url}
+            src={userFollows.avatar?.url}
             onClick={handleClose}
           />
         </ListItemAvatar>

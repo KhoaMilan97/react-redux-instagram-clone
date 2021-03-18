@@ -1,7 +1,6 @@
 import { actionTypes } from "../actions/actionType";
 
 const initialState = {
-  isLoggedIn: false,
   token: "",
   user: {},
 };
@@ -12,7 +11,6 @@ const authReducer = (state = initialState, action) => {
     case actionTypes.REGISTER_SUCCESS:
       return {
         ...state,
-        isLoggedIn: true,
         token: action.payload.accessToken,
         user: action.payload.user,
       };
@@ -37,7 +35,6 @@ const authReducer = (state = initialState, action) => {
     case actionTypes.REGISTER_FAIL:
       return {
         ...state,
-        isLoggedIn: false,
         token: "",
         user: {},
       };

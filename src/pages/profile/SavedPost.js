@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { makeStyles, useTheme } from "@material-ui/core/styles";
@@ -9,10 +9,7 @@ import {
   GridListTileBar,
   useMediaQuery,
   CircularProgress,
-  Typography,
 } from "@material-ui/core";
-
-import SingleLoading from "../../components/loading/SingleLoading";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -55,13 +52,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function PostGallerry({
-  posts,
-  loadingPost,
-  hasMore,
-  setPage,
-  postLoading,
-}) {
+export default function SavedPost() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(0);
+  const [page, setPage] = useState(1);
+
   const classes = useStyles();
   const theme = useTheme();
   const matchesSm = useMediaQuery(theme.breakpoints.down("sm"));
@@ -70,7 +66,7 @@ export default function PostGallerry({
 
   const lastPostElementRef = useCallback(
     (node) => {
-      if (loadingPost) return;
+      if (loading) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
@@ -79,12 +75,8 @@ export default function PostGallerry({
       });
       if (node) observer.current.observe(node);
     },
-    [loadingPost, hasMore, setPage]
+    [loading, hasMore, setPage]
   );
-
-  if (postLoading) {
-    return <SingleLoading pending={postLoading} />;
-  }
 
   return (
     <div className={classes.root}>
@@ -93,7 +85,7 @@ export default function PostGallerry({
         className={classes.gridList}
         cols={3}
       >
-        {posts.length > 0 ? (
+        {posts.length > 0 &&
           posts.map((post, index) => {
             if (posts.length > 5 && posts.length === index + 1) {
               return (
@@ -136,12 +128,9 @@ export default function PostGallerry({
                 )}
               </GridListTile>
             );
-          })
-        ) : (
-          <Typography>This User No Posts</Typography>
-        )}
+          })}
       </GridList>
-      {loadingPost && (
+      {loading && (
         <div
           style={{ display: "flex", justifyContent: "center", marginTop: 50 }}
         >

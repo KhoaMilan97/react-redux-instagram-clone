@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
 import CardActions from "@material-ui/core/CardActions";
@@ -8,7 +8,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import BookmarkBorderOutlinedIcon from "@material-ui/icons/BookmarkBorderOutlined";
 import FavoriteBorderOutlinedIcon from "@material-ui/icons/FavoriteBorderOutlined";
 import ModeCommentOutlinedIcon from "@material-ui/icons/ModeCommentOutlined";
-import SendIcon from "@material-ui/icons/Send";
 import TelegramIcon from "@material-ui/icons/Telegram";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 
@@ -34,38 +33,50 @@ const useStyles = makeStyles((theme) => ({
 
 function CardAction(props, ref) {
   const classes = useStyles();
-  const { post, setPost, auth, handleFocus } = props;
-  const [double, setDouble] = useState(false);
+  const { post, setPost, auth, handleFocus, setLikeCount } = props;
+  const [loading, setLoading] = useState(false);
   const history = useHistory();
   const location = useLocation();
+  const [isLiked, setIsLiked] = useState(false);
 
-  const userIsLiked = post.likes.some((like) => like === auth.user._id);
+  useEffect(() => {
+    const userIsLiked = post.likes.some((like) => like === auth.user._id);
+    if (userIsLiked) setIsLiked(true);
+  }, [auth.user._id, post.likes]);
 
   const handleLike = () => {
-    setDouble(true);
+    if (loading) return;
+    setLoading(true);
+    setIsLiked(true);
+    setLikeCount((previousCount) => previousCount + 1);
+
     likePost({ id: auth.user._id }, post._id, auth.token)
       .then((res) => {
         const newData = post._id === res.data._id ? res.data : post;
         setPost(newData);
-        setDouble(false);
+        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
-        setDouble(false);
+        setLoading(false);
       });
   };
 
   const handleUnLike = () => {
-    setDouble(true);
+    if (loading) return;
+    setLoading(true);
+    setIsLiked(false);
+    setLikeCount((previousCount) => previousCount - 1);
+
     unLikePost({ id: auth.user._id }, post._id, auth.token)
       .then((res) => {
         const newData = post._id === res.data._id ? res.data : post;
         setPost(newData);
-        setDouble(false);
+        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
-        setDouble(false);
+        setLoading(false);
       });
   };
 
@@ -80,12 +91,11 @@ function CardAction(props, ref) {
   return (
     <>
       <CardActions disableSpacing>
-        {userIsLiked ? (
+        {isLiked ? (
           <IconButton
             onClick={handleUnLike}
             className={classes.icon}
             aria-label="remove to favorites"
-            disabled={double}
           >
             <FavoriteIcon color="secondary" />
           </IconButton>
@@ -94,7 +104,6 @@ function CardAction(props, ref) {
             onClick={handleLike}
             className={classes.icon}
             aria-label="add to favorites"
-            disabled={double}
           >
             <FavoriteBorderOutlinedIcon />
           </IconButton>
