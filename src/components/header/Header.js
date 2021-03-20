@@ -199,7 +199,11 @@ const Header = () => {
                   </ListItemIcon>
                   <ListItemText primary="Profile" />
                 </MenuItem>
-                <MenuItem onClick={handleClose}>
+                <MenuItem
+                  component={Link}
+                  to={`/${user.username}/saved`}
+                  onClick={handleClose}
+                >
                   <ListItemIcon>
                     <BookmarkBorderIcon />
                   </ListItemIcon>

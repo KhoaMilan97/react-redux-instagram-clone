@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link, Switch, useRouteMatch } from "react-router-dom";
+import { Link, Switch, useRouteMatch, useLocation } from "react-router-dom";
 
 import { Container } from "@material-ui/core";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
@@ -45,6 +45,9 @@ const useStyles = makeStyles((theme) => ({
   tabs: {
     borderRight: `1px solid ${theme.palette.divider}`,
     overflow: "visible",
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
   },
 }));
 
@@ -52,6 +55,7 @@ export default function Accounts() {
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
   let { path, url } = useRouteMatch();
+  const location = useLocation();
 
   useEffect(() => {
     if (window.location.pathname === `${url}/edit`) {
@@ -59,7 +63,7 @@ export default function Accounts() {
     } else if (window.location.pathname === `${url}/change-password`) {
       setValue(1);
     }
-  }, [url]);
+  }, [url, location]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);

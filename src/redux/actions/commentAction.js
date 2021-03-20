@@ -25,6 +25,10 @@ const getTotalComments = (total) => ({
   payload: total,
 });
 
+export const clearOldComments = () => ({
+  type: actionTypes.CLEAR_OLD_COMMENTS,
+});
+
 export const getTotalCommentsAction = (id, token) => async (dispatch) => {
   try {
     const res = await getCommentCount(id, token);

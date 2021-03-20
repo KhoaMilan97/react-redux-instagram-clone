@@ -14,7 +14,6 @@ import { CircularProgress, Hidden } from "@material-ui/core";
 import HomeCard from "../components/card/HomeCard";
 import CreatePostForm from "../components/form/CreatePostForm";
 import { getFollowerPost } from "../functions/post";
-import Spinner from "../components/loading/Spinner";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -66,12 +65,12 @@ const Home = () => {
       .then((res) => {
         setPosts((post) => [...post, ...res.data]);
         setHasMore(res.data.length > 0);
-        setLoading(false);
+
         setLoadingPost(false);
       })
       .catch((err) => {
         console.log(err);
-        setLoading(false);
+
         setLoadingPost(false);
       });
   }, [user._id, token, page]);
@@ -90,10 +89,6 @@ const Home = () => {
     [loadingPost, hasMore]
   );
 
-  if (loading) {
-    return <Spinner pending={loading} />;
-  }
-
   return (
     <>
       <Container maxWidth="md">
@@ -107,7 +102,7 @@ const Home = () => {
             <CreatePostForm />
 
             {posts.map((post, index) => {
-              if (posts.length === index + 1) {
+              if (posts.length > 5 && posts.length === index + 1) {
                 return (
                   <HomeCard
                     ref={lastPostElementRef}

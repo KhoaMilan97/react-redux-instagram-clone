@@ -33,8 +33,8 @@ import {
   getCommentsAction,
   createCommentAction,
   getTotalCommentsAction,
+  clearOldComments,
 } from "../redux/actions/commentAction";
-import Spinner from "../components/loading/Spinner";
 import ConfirmModal from "../components/modal/ConfirmModal";
 import CardAction from "../components/card/CardAction";
 import CommentPost from "../components/comments/CommentPost";
@@ -137,6 +137,10 @@ function PostDetail() {
   useEffect(() => {
     limitRef.current = limit;
   }, [limit]);
+
+  useEffect(() => {
+    dispatch(clearOldComments());
+  }, [id]);
 
   const getComments = useCallback(() => {
     dispatch(getCommentsAction(id, page, limitRef.current, auth.token));

@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useRouteMatch, Switch } from "react-router-dom";
+import {
+  useParams,
+  Link,
+  useRouteMatch,
+  Switch,
+  useLocation,
+} from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import ReactHtmlParser from "react-html-parser";
 
@@ -113,6 +119,7 @@ function Profile() {
   const theme = useTheme();
   const matchesSM = useMediaQuery(theme.breakpoints.down("sm"));
   let { path, url } = useRouteMatch();
+  const location = useLocation();
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -125,16 +132,20 @@ function Profile() {
   useEffect(() => {
     if (window.location.pathname === url) {
       setValue(0);
-    } else if (window.location.pathname === `${url}/saved/`) {
+    } else if (
+      window.location.pathname === `${url}/saved/` ||
+      window.location.pathname === `${url}/saved`
+    ) {
       setValue(1);
     }
-  }, [url]);
+  }, [url, location]);
 
   useEffect(() => {
     setPosts([]);
     setPage(1);
     setPostLoading(true);
     setUser("");
+    setLoading(true);
   }, [username]);
 
   useEffect(() => {
@@ -142,7 +153,7 @@ function Profile() {
       setUser(auth.user);
       setLoading(false);
     } else {
-      setLoading(true);
+      //setLoading(true);
       getUser(username)
         .then((res) => {
           setUser(res.data);
@@ -156,7 +167,7 @@ function Profile() {
   }, [username, auth.user]);
 
   useEffect(() => {
-    if (user._id) {
+    if (user?._id) {
       //setPostLoading(true);
       setLoadingPost(true);
       getPosts(user._id, page, auth.token)
@@ -172,7 +183,7 @@ function Profile() {
           setLoadingPost(false);
         });
     }
-  }, [user._id, page, auth.token]);
+  }, [user?._id, page, auth.token]);
 
   useEffect(() => {
     if (title === "Followers" && openListFollow) {
@@ -180,15 +191,7 @@ function Profile() {
     } else if (title === "Following" && openListFollow) {
       setListFollow(user.following);
     }
-  }, [title, openListFollow, user.followers, user.following]);
-
-  if (loading) {
-    return <Spinner pending={loading} />;
-  }
-
-  if (!user && !loading) {
-    return <NotFound />;
-  }
+  }, [title, openListFollow, user?.followers, user?.following]);
 
   const handleFollowAction = () => {
     setFollowLoading(true);
@@ -291,6 +294,14 @@ function Profile() {
       }
     }
   };
+
+  if (loading) {
+    return <Spinner pending={loading} />;
+  }
+
+  if (!user && !loading) {
+    return <NotFound />;
+  }
 
   return (
     <>
@@ -421,18 +432,7 @@ function Profile() {
             </Tabs>
           </Paper>
         </Grid>
-        {/* {postLoading ? (
-          <SingleLoading pending={postLoading} />
-        ) : posts.length > 0 ? (
-          <PostGallerry
-            posts={posts}
-            setPage={setPage}
-            hasMore={hasMore}
-            loadingPost={loadingPost}
-          />
-        ) : (
-          <Typography>This User No Posts</Typography>
-        )} */}
+
         <Switch>
           <PrivateRoute
             sensitive
@@ -452,7 +452,7 @@ function Profile() {
             sensitive
             exact
             path={`${path}/saved/`}
-            component={SavedPost}
+            render={() => <SavedPost user={user} />}
           />
         </Switch>
       </Container>

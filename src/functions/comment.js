@@ -39,3 +39,12 @@ export const deleteComment = async (id, token) =>
   await axios.delete(`/api/del-comment/${id}`, {
     headers: { Authorization: token },
   });
+
+export const deleteReplyComment = async (id, repid, token) =>
+  await axios.patch(
+    `/api/del-reply-comment/${id}`,
+    { repid },
+    {
+      headers: { Authorization: token },
+    }
+  );

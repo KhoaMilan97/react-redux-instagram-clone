@@ -95,7 +95,7 @@ export default function PostGallerry({
       >
         {posts.length > 0 ? (
           posts.map((post, index) => {
-            if (posts.length > 5 && posts.length === index + 1) {
+            if (posts.length > 11 && posts.length === index + 1) {
               return (
                 <GridListTile
                   ref={lastPostElementRef}
@@ -138,7 +138,9 @@ export default function PostGallerry({
             );
           })
         ) : (
-          <Typography>This User No Posts</Typography>
+          <Typography align="center" component="p">
+            This User No Posts
+          </Typography>
         )}
       </GridList>
       {loadingPost && (

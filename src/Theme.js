@@ -1,5 +1,7 @@
 import { unstable_createMuiStrictModeTheme as createMuiTheme } from "@material-ui/core/styles";
+import createBreakpoints from "@material-ui/core/styles/createBreakpoints";
 
+const breakpoints = createBreakpoints({});
 export const theme = createMuiTheme({
   typography: {
     fontFamily: `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -17,6 +19,9 @@ export const theme = createMuiTheme({
     MuiContainer: {
       root: {
         padding: "30px 0 30px 0",
+        [breakpoints.down("xs")]: {
+          padding: "0",
+        },
       },
     },
     // MuiTab: {

@@ -24,6 +24,7 @@ import {
   likeComment,
   unLikeComment,
   replyComment,
+  deleteReplyComment,
 } from "../../functions/comment";
 import { deleteCommentAction } from "../../redux/actions/commentAction";
 
@@ -198,6 +199,12 @@ function CommentPostList({ comment }) {
     await dispatch(deleteCommentAction(id, token));
   };
 
+  const handleDeleteReplyCmt = (cmtid, repid) => {
+    deleteReplyComment(cmtid, repid, token).then((res) => {
+      if (res.data) setCommentPost(res.data);
+    });
+  };
+
   return (
     <>
       <ListItem key={commentPost._id} disableGutters>
@@ -360,6 +367,20 @@ function CommentPostList({ comment }) {
                     >
                       Reply
                     </Button>
+                    {cmt.user_rep_name === user.username && (
+                      <Button
+                        color="inherit"
+                        disableElevation
+                        disableFocusRipple
+                        disableRipple
+                        className={classes.reply}
+                        onClick={() =>
+                          handleDeleteReplyCmt(commentPost._id, cmt._id)
+                        }
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </>
                 }
               />

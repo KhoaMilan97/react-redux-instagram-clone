@@ -53,6 +53,13 @@ const commentReducer = (state = initialState, action) => {
         totalComments: state.totalComments - 1,
         limit: state.limit - 1,
       };
+    case actionTypes.CLEAR_OLD_COMMENTS:
+      return {
+        comments: [],
+        status: "idle",
+        totalComments: 0,
+        limit: 0,
+      };
 
     default:
       return state;

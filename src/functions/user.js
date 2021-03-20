@@ -38,3 +38,25 @@ export const unfollowUser = async (followId, token) =>
       },
     }
   );
+
+export const savedPost = async (postId, userId, token) =>
+  await axios.patch(
+    `/api/saved/${userId}`,
+    { id: postId },
+    {
+      headers: {
+        Authorization: token,
+      },
+    }
+  );
+
+export const unsavedPost = async (postId, userId, token) =>
+  await axios.patch(
+    `/api/un-saved/${userId}`,
+    { id: postId },
+    {
+      headers: {
+        Authorization: token,
+      },
+    }
+  );

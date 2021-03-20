@@ -27,6 +27,9 @@ const useStyles = makeStyles((theme) => ({
   root: {
     padding: "20px 40px",
     height: "auto",
+    [theme.breakpoints.down("xs")]: {
+      padding: "20px 5px",
+    },
   },
   left: {
     marginLeft: "auto",

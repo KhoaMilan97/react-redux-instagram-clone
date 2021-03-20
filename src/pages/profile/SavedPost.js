@@ -1,15 +1,11 @@
-import React, { useRef, useCallback, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import GridList from "@material-ui/core/GridList";
 import GridListTile from "@material-ui/core/GridListTile";
 import CollectionsIcon from "@material-ui/icons/Collections";
-import {
-  GridListTileBar,
-  useMediaQuery,
-  CircularProgress,
-} from "@material-ui/core";
+import { GridListTileBar, useMediaQuery } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,31 +48,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function SavedPost() {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(0);
-  const [page, setPage] = useState(1);
-
+export default function SavedPost({ user }) {
   const classes = useStyles();
   const theme = useTheme();
   const matchesSm = useMediaQuery(theme.breakpoints.down("sm"));
   const matchesXs = useMediaQuery(theme.breakpoints.down("xs"));
-  const observer = useRef();
-
-  const lastPostElementRef = useCallback(
-    (node) => {
-      if (loading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          setPage((prevPageNumber) => prevPageNumber + 1);
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [loading, hasMore, setPage]
-  );
 
   return (
     <div className={classes.root}>
@@ -85,30 +61,8 @@ export default function SavedPost() {
         className={classes.gridList}
         cols={3}
       >
-        {posts.length > 0 &&
-          posts.map((post, index) => {
-            if (posts.length > 5 && posts.length === index + 1) {
-              return (
-                <GridListTile
-                  ref={lastPostElementRef}
-                  component={Link}
-                  to={`/post/${post._id}`}
-                  className={classes.gridTile}
-                  key={post._id}
-                  cols={1}
-                >
-                  <img src={post.images[0]?.url} alt="gird list" />
-                  {post.images?.length > 1 && (
-                    <GridListTileBar
-                      className={classes.titleBar}
-                      actionIcon={<CollectionsIcon className={classes.icon} />}
-                      titlePosition="top"
-                      actionPosition="right"
-                    />
-                  )}
-                </GridListTile>
-              );
-            }
+        {user.saved.length > 0 &&
+          user.saved.map((post, index) => {
             return (
               <GridListTile
                 component={Link}
@@ -130,13 +84,6 @@ export default function SavedPost() {
             );
           })}
       </GridList>
-      {loading && (
-        <div
-          style={{ display: "flex", justifyContent: "center", marginTop: 50 }}
-        >
-          <CircularProgress size={25} />
-        </div>
-      )}
     </div>
   );
 }
