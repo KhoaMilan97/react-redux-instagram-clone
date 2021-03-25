@@ -20,8 +20,8 @@ const messageReducer = (state = initialState, action) => {
     case actionTypes.CLEAR_MESSAGE:
       return {
         ...state,
-        msg: "",
-        type: "error",
+        // msg: "",
+        // type: "error",
         open: false,
       };
     default:

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   useParams,
   Link,
@@ -6,8 +6,9 @@ import {
   Switch,
   useLocation,
 } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import ReactHtmlParser from "react-html-parser";
+import _ from "lodash";
 
 import Avatar from "@material-ui/core/Avatar";
 import Grid from "@material-ui/core/Grid";
@@ -29,20 +30,23 @@ import DoneIcon from "@material-ui/icons/Done";
 import MuiLink from "@material-ui/core/Link";
 
 import NotFound from "../NotFound";
-import { getUser, followUser, unfollowUser } from "../../functions/user";
+import { getUser } from "../../functions/user";
 import Spinner from "../../components/loading/Spinner";
-import { actionTypes } from "../../redux/actions/actionType";
 import PostGallerry from "./PostGallerry";
 import FollowModal from "../../components/modal/FollowModal";
 import { getPosts } from "../../functions/post";
 import ListFollowModal from "../../components/modal/ListFollowModal";
 import PrivateRoute from "../../utils/privateRoute";
 import SavedPost from "./SavedPost";
+import useFollow from "../../utils/useFollow";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
     width: 150,
     height: 150,
+    [theme.breakpoints.down("xs")]: {
+      marginTop: 20,
+    },
   },
   root: {
     flexGrow: 1,
@@ -101,7 +105,6 @@ function Profile() {
   const [value, setValue] = useState(0);
   const [user, setUser] = useState("");
   const [loading, setLoading] = useState(true);
-  const [followLoading, setFollowLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [posts, setPosts] = useState([]);
   const [postLoading, setPostLoading] = useState(true);
@@ -115,11 +118,18 @@ function Profile() {
   const classes = useStyles();
   const { username } = useParams();
   const auth = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
   const theme = useTheme();
   const matchesSM = useMediaQuery(theme.breakpoints.down("sm"));
+  const postsRef = useRef();
+
   let { path, url } = useRouteMatch();
   const location = useLocation();
+  const {
+    userAfterFollow,
+    followLoading,
+    handleFollowAction,
+    handleUnFollowAction,
+  } = useFollow(user._id, auth.token);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -128,6 +138,16 @@ function Profile() {
   const handleClickOpen = () => {
     setOpen(true);
   };
+
+  useEffect(() => {
+    if (userAfterFollow) {
+      setUser(userAfterFollow);
+    }
+  }, [userAfterFollow]);
+
+  useEffect(() => {
+    postsRef.current = posts;
+  }, [posts]);
 
   useEffect(() => {
     if (window.location.pathname === url) {
@@ -172,7 +192,9 @@ function Profile() {
       setLoadingPost(true);
       getPosts(user._id, page, auth.token)
         .then((res) => {
-          setPosts((prev) => [...new Set([...prev, ...res.data.post])]);
+          let newArr = [...postsRef.current, ...res.data.post];
+          newArr = _.uniqBy(newArr, "_id");
+          setPosts(newArr);
           setHasMore(res.data.post.length > 0);
           setPostLoading(false);
           setLoadingPost(false);
@@ -192,40 +214,6 @@ function Profile() {
       setListFollow(user.following);
     }
   }, [title, openListFollow, user?.followers, user?.following]);
-
-  const handleFollowAction = () => {
-    setFollowLoading(true);
-    followUser(user._id, auth.token)
-      .then((res) => {
-        setUser(res.data.userFollower);
-        dispatch({
-          type: actionTypes.GET_USER,
-          payload: res.data.userFollowing,
-        });
-        setFollowLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setFollowLoading(false);
-      });
-  };
-
-  const handleUnFollowAction = () => {
-    setFollowLoading(true);
-    unfollowUser(user._id, auth.token)
-      .then((res) => {
-        setUser(res.data.userFollower);
-        dispatch({
-          type: actionTypes.GET_USER,
-          payload: res.data.userFollowing,
-        });
-        setFollowLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setFollowLoading(false);
-      });
-  };
 
   const checkUserIsFollow = (id) => {
     return auth.user.following.some((item) => item._id === id);
@@ -325,7 +313,11 @@ function Profile() {
               <Avatar alt="profile picture" className={classes.avatar} />
             )}
           </Grid>
-          <Grid item sm={8}>
+          <Grid
+            style={{ textAlign: matchesSM ? "center" : "left" }}
+            item
+            sm={8}
+          >
             <Typography className={classes.name}>
               {user.username} {renderAction()}
             </Typography>
@@ -337,7 +329,7 @@ function Profile() {
             />
 
             <Grid container style={{ marginTop: 10 }}>
-              <Grid item>
+              <Grid item style={{ marginLeft: matchesSM ? 15 : 0 }}>
                 <Typography>
                   <span className={classes.number}>{posts.length}</span> posts
                 </Typography>

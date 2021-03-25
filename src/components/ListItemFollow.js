@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -10,57 +10,35 @@ import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import Button from "@material-ui/core/Button";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
-import { followUser, unfollowUser } from "../functions/user";
-import { actionTypes } from "../redux/actions/actionType";
 import FollowModal from "./modal/FollowModal";
+
+import useFollow from "../utils/useFollow";
 
 function ListItemFollow({ userFollow, handleClose }) {
   const [userFollows, setUserFollows] = useState(userFollow);
-  const [followLoading, setFollowLoading] = useState(false);
+
   const [open, setOpen] = useState(false);
 
   const { user, token } = useSelector((state) => state.auth);
   const checkIsFollow = user.following.some(
     (item) => item._id === userFollows._id
   );
-  const dispatch = useDispatch();
+
+  const {
+    userAfterFollow,
+    followLoading,
+    handleFollowAction,
+    handleUnFollowAction,
+  } = useFollow(userFollows._id, token);
+
+  useEffect(() => {
+    if (userAfterFollow) {
+      setUserFollows(userAfterFollow);
+    }
+  }, [userAfterFollow]);
 
   const handleClickOpen = () => {
     setOpen(true);
-  };
-
-  const handleFollowAction = () => {
-    setFollowLoading(true);
-    followUser(userFollows._id, token)
-      .then((res) => {
-        setUserFollows(res.data.userFollower);
-        dispatch({
-          type: actionTypes.GET_USER,
-          payload: res.data.userFollowing,
-        });
-        setFollowLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setFollowLoading(false);
-      });
-  };
-
-  const handleUnFollowAction = () => {
-    setFollowLoading(true);
-    unfollowUser(userFollows._id, token)
-      .then((res) => {
-        setUserFollows(res.data.userFollower);
-        dispatch({
-          type: actionTypes.GET_USER,
-          payload: res.data.userFollowing,
-        });
-        setFollowLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setFollowLoading(false);
-      });
   };
 
   return (

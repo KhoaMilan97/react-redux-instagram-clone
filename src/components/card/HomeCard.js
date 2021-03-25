@@ -27,6 +27,7 @@ import {
   getComment,
   getCommentCount,
 } from "../../functions/comment";
+import CardModal from "../modal/CardModal";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -83,6 +84,7 @@ const HomeCard = forwardRef((props, ref) => {
   const [comments, setComments] = useState([]);
   const [totalComment, setTotalComment] = useState(0);
   const [likeCount, setLikeCount] = useState(post.likes.length);
+  const [open, setOpen] = useState(false);
 
   const auth = useSelector((state) => state.auth);
 
@@ -146,7 +148,7 @@ const HomeCard = forwardRef((props, ref) => {
           />
         }
         action={
-          <IconButton aria-label="settings">
+          <IconButton onClick={() => setOpen(true)} aria-label="settings">
             <MoreHorizIcon />
           </IconButton>
         }
@@ -226,6 +228,12 @@ const HomeCard = forwardRef((props, ref) => {
           }
         />
       </FormControl>
+      <CardModal
+        open={open}
+        setOpen={setOpen}
+        user={postCard.postedBy}
+        post={postCard}
+      />
     </Card>
   );
 });

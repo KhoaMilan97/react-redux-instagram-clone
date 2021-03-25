@@ -7,6 +7,8 @@ import ListItem from "@material-ui/core/ListItem";
 import Dialog from "@material-ui/core/Dialog";
 import Divider from "@material-ui/core/Divider";
 import { ListItemText } from "@material-ui/core";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { useTheme } from "@material-ui/core/styles";
 
 const useStyles = makeStyles({
   avatar: {
@@ -26,6 +28,8 @@ const useStyles = makeStyles({
 function SimpleDialog(props) {
   const classes = useStyles();
   const { onClose, open, user, handleUnFollowAction } = props;
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("xs"));
 
   const handleClose = () => {
     onClose();
@@ -38,6 +42,7 @@ function SimpleDialog(props) {
       open={open}
       maxWidth="xs"
       fullWidth={true}
+      fullScreen={fullScreen}
     >
       <List>
         <ListItem

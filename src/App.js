@@ -2,6 +2,8 @@ import { Route, Switch, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import Hidden from "@material-ui/core/Hidden";
+
 import Footer from "./components/Footer";
 import Header from "./components/header/Header";
 import InstaLoading from "./components/loading/InstaLoading";
@@ -26,6 +28,7 @@ import { checkCurrentUser } from "./redux/actions/authAction";
 import { setMessage } from "./redux/actions/messageAction";
 import EditPost from "./pages/post/EditPost";
 import Message from "./utils/Message";
+import ToolBarMargin from "./utils/ToolBarMargin";
 
 function App() {
   const { pathname } = useLocation();
@@ -93,6 +96,9 @@ function App() {
 
         <Route component={NotFound} />
       </Switch>
+      <Hidden smUp>
+        <ToolBarMargin />
+      </Hidden>
       <Footer />
     </>
   );

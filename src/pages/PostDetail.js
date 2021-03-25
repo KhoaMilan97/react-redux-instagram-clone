@@ -140,7 +140,7 @@ function PostDetail() {
 
   useEffect(() => {
     dispatch(clearOldComments());
-  }, [id]);
+  }, [id, dispatch]);
 
   const getComments = useCallback(() => {
     dispatch(getCommentsAction(id, page, limitRef.current, auth.token));

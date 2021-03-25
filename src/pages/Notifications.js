@@ -1,10 +1,12 @@
 import React from "react";
 
+import Container from "@material-ui/core/Container";
+
 function Notifications() {
   return (
-    <div>
+    <Container maxWidth="md">
       <h1>Notifications</h1>
-    </div>
+    </Container>
   );
 }
 

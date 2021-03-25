@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
-//import InfiniteScroll from "react-infinite-scroll-component";
+import _ from "lodash";
 
 import Container from "@material-ui/core/Container";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
@@ -14,6 +14,7 @@ import { CircularProgress, Hidden } from "@material-ui/core";
 import HomeCard from "../components/card/HomeCard";
 import CreatePostForm from "../components/form/CreatePostForm";
 import { getFollowerPost } from "../functions/post";
+import { suggestUser } from "../functions/user";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -43,6 +44,10 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     display: "block",
   },
+  fixedTop: {
+    position: "sticky",
+    top: `calc(${theme.mixins.toolbar.minHeight}px + 38px)`,
+  },
 }));
 
 const Home = () => {
@@ -50,7 +55,7 @@ const Home = () => {
   const theme = useTheme();
   const matchesSM = useMediaQuery(theme.breakpoints.down("sm"));
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [suggestListUser, setSuggestListUser] = useState([]);
   const [loadingPost, setLoadingPost] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -58,12 +63,19 @@ const Home = () => {
   const auth = useSelector((state) => state.auth);
   const { user, token } = auth;
   const observer = useRef();
+  const postsRef = useRef();
 
   useEffect(() => {
+    postsRef.current = posts;
+  }, [posts]);
+
+  const getPost = useCallback(() => {
     setLoadingPost(true);
     getFollowerPost(user._id, page, token)
       .then((res) => {
-        setPosts((post) => [...post, ...res.data]);
+        let newArr = [...postsRef.current, ...res.data];
+        newArr = _.uniqBy(newArr, "_id");
+        setPosts(newArr);
         setHasMore(res.data.length > 0);
 
         setLoadingPost(false);
@@ -74,6 +86,20 @@ const Home = () => {
         setLoadingPost(false);
       });
   }, [user._id, token, page]);
+
+  useEffect(() => {
+    getPost();
+  }, [getPost]);
+
+  useEffect(() => {
+    suggestUser(user._id, token)
+      .then((res) => {
+        setSuggestListUser(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [user._id, token]);
 
   const lastPostElementRef = useCallback(
     (node) => {
@@ -120,8 +146,8 @@ const Home = () => {
             )}
           </Grid>
           <Hidden smDown>
-            <Grid item md={4}>
-              <Grid container direction="column">
+            <Grid item md={4} style={{ position: "relative" }}>
+              <Grid container direction="column" className={classes.fixedTop}>
                 <Grid item container>
                   <Grid item md={3}>
                     {user.avatar?.url &&
@@ -165,33 +191,38 @@ const Home = () => {
                     <Typography variant="body2">See all</Typography>
                   </Grid>
                 </Grid>
-                <Grid item container style={{ marginBottom: 10 }}>
-                  <Grid item md={2}>
-                    {user.avatar?.url ? (
-                      <Avatar
-                        className={classes.avatarSmall}
-                        src={user.avatar?.url}
-                        alt="profile picture"
-                      />
-                    ) : (
-                      <Avatar
-                        className={classes.avatarSmall}
-                        alt="profile picture"
-                      />
-                    )}
-                  </Grid>
-                  <Grid item container alignItems="center" md>
-                    <Typography className={classes.name} variant="body2">
-                      p_25102002
-                    </Typography>
-                    <Typography style={{ color: "#8e8e8e", fontSize: 12 }}>
-                      Followed by chicong.l
-                    </Typography>
-                  </Grid>
-                  <Grid item container alignItems="center" md>
-                    <MuiLink className={classes.link}>Follow</MuiLink>
-                  </Grid>
-                </Grid>
+                {suggestListUser.length > 0 &&
+                  suggestListUser.map((u) => (
+                    <Grid
+                      key={u._id}
+                      item
+                      container
+                      style={{ marginBottom: 10 }}
+                    >
+                      <Grid item md={2}>
+                        {u.avatar?.url ? (
+                          <Avatar
+                            className={classes.avatarSmall}
+                            src={u.avatar?.url}
+                            alt="profile picture"
+                          />
+                        ) : (
+                          <Avatar
+                            className={classes.avatarSmall}
+                            alt="profile picture"
+                          />
+                        )}
+                      </Grid>
+                      <Grid item container alignItems="center" md>
+                        <Typography className={classes.name} variant="body2">
+                          {u.username}
+                        </Typography>
+                      </Grid>
+                      <Grid item container alignItems="center" md>
+                        <MuiLink className={classes.link}>Follow</MuiLink>
+                      </Grid>
+                    </Grid>
+                  ))}
               </Grid>
             </Grid>
           </Hidden>

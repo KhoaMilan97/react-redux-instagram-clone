@@ -5,7 +5,6 @@ import {
   deleteComment,
   getCommentCount,
 } from "../../functions/comment";
-import { setMessage } from "./messageAction";
 
 const getComments = () => ({
   type: actionTypes.GET_COMMENTS,
@@ -63,7 +62,7 @@ export const createCommentAction = (data, token) => async (dispatch) => {
 
 export const deleteCommentAction = (id, token) => async (dispatch) => {
   try {
-    const res = await deleteComment(id, token);
+    await deleteComment(id, token);
     dispatch({
       type: actionTypes.DELETE_COMMENT,
       payload: id,

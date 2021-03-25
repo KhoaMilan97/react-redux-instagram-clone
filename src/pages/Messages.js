@@ -1,10 +1,12 @@
 import React from "react";
 
+import Container from "@material-ui/core/Container";
+
 function Messages() {
   return (
-    <div>
+    <Container maxWidth="md">
       <h1>Messages</h1>
-    </div>
+    </Container>
   );
 }
 

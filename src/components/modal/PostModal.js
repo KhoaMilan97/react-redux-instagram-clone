@@ -16,6 +16,8 @@ import CancelIcon from "@material-ui/icons/Cancel";
 import Typography from "@material-ui/core/Typography";
 import CloseIcon from "@material-ui/icons/Close";
 import { CircularProgress, IconButton, Divider } from "@material-ui/core";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { useTheme } from "@material-ui/core/styles";
 
 import FileUpload from "../form/FileUpload";
 
@@ -88,6 +90,8 @@ export default function PostModal({ open, setOpen }) {
   const auth = useSelector((state) => state.auth);
   const classes = useStyles();
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("xs"));
 
   const handleRemoveImage = (id) => {
     setLoading(true);
@@ -138,6 +142,7 @@ export default function PostModal({ open, setOpen }) {
         aria-labelledby="form-dialog-title"
         fullWidth
         maxWidth="xs"
+        fullScreen={fullScreen}
       >
         <DialogTitle align="center" onClose={handleClose}>
           Create Post

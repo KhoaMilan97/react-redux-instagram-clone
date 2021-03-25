@@ -54,6 +54,12 @@ const useStyles = makeStyles((theme) => ({
   loading: {
     color: "white",
   },
+  mobileSpacing: {
+    [theme.breakpoints.down("xs")]: {
+      width: "100% !important",
+      margin: "0px !important",
+    },
+  },
 }));
 
 function EditProfile() {
@@ -88,7 +94,12 @@ function EditProfile() {
   return (
     <div className={classes.root}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Grid container justify="space-around" spacing={4}>
+        <Grid
+          container
+          className={classes.mobileSpacing}
+          justify="space-around"
+          spacing={4}
+        >
           <Grid item container alignItems="center">
             <Grid item xs={4}>
               {imageLoading ? (

@@ -17,6 +17,7 @@ import Grow from "@material-ui/core/Grow";
 import Paper from "@material-ui/core/Paper";
 import Popper from "@material-ui/core/Popper";
 import MenuList from "@material-ui/core/MenuList";
+import Hidden from "@material-ui/core/Hidden";
 
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
 import AccountCircle from "@material-ui/icons/AccountCircle";
@@ -70,6 +71,16 @@ const useStyles = makeStyles((theme) => ({
   avatar: {
     width: theme.spacing(3),
     height: theme.spacing(3),
+  },
+  appBarBottom: {
+    top: "auto",
+    bottom: 0,
+    alignItems: "center",
+    backgroundColor: "#fff",
+    display: "none",
+    [theme.breakpoints.down("xs")]: {
+      display: "block",
+    },
   },
 }));
 
@@ -247,7 +258,62 @@ const Header = () => {
           <div className={classes.grow} />
           <Search />
           <div className={classes.grow} />
-          <div className={classes.sectionDesktop}>
+          <Hidden xsDown>
+            <div className={classes.sectionDesktop}>
+              {routes.map((route) => (
+                <IconButton
+                  key={route.activeIndex}
+                  component={Link}
+                  to={route.link}
+                  color="inherit"
+                >
+                  {route.activeIndex === active
+                    ? route.activeIcon()
+                    : route.icon()}
+                </IconButton>
+              ))}
+
+              <IconButton
+                edge="end"
+                aria-label="account of current user"
+                ref={anchorRef}
+                aria-controls={open ? "menu-list-grow" : undefined}
+                aria-haspopup="true"
+                onClick={handleToggle}
+                color="inherit"
+              >
+                {user.avatar?.url &&
+                !(
+                  Object.keys(user.avatar?.url).length === 0 &&
+                  user.avatar?.url.constructor === Object
+                ) ? (
+                  <Avatar
+                    alt={user.username}
+                    src={user.avatar?.url}
+                    className={classes.avatar}
+                  />
+                ) : (
+                  <Avatar alt="avatar" className={classes.avatar} />
+                )}
+              </IconButton>
+            </div>
+          </Hidden>
+        </Toolbar>
+      </AppBar>
+
+      {renderMenu}
+      <section className={classes.toolBarMargin} />
+
+      <AppBar position="fixed" className={classes.appBarBottom} elevation={1}>
+        <Toolbar className={classes.toolbarContainer}>
+          <div
+            className={classes.sectionDesktop}
+            style={{
+              display: "flex",
+              width: "100%",
+              justifyContent: "space-around",
+            }}
+          >
             {routes.map((route) => (
               <IconButton
                 key={route.activeIndex}
@@ -287,9 +353,6 @@ const Header = () => {
           </div>
         </Toolbar>
       </AppBar>
-
-      {renderMenu}
-      <section className={classes.toolBarMargin} />
     </div>
   );
 };

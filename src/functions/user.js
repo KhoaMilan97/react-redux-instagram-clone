@@ -60,3 +60,10 @@ export const unsavedPost = async (postId, userId, token) =>
       },
     }
   );
+
+export const suggestUser = async (userId, token) =>
+  await axios.get(`/api/suggest-user/${userId}`, {
+    headers: {
+      Authorization: token,
+    },
+  });

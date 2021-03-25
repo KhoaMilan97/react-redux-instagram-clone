@@ -8,6 +8,8 @@ import IconButton from "@material-ui/core/IconButton";
 import CloseIcon from "@material-ui/icons/Close";
 import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { useTheme } from "@material-ui/core/styles";
 
 import ListItemFollow from "../ListItemFollow";
 
@@ -26,6 +28,7 @@ const styles = (theme) => ({
 
 const DialogTitle = withStyles(styles)((props) => {
   const { children, classes, onClose, ...other } = props;
+
   return (
     <MuiDialogTitle disableTypography className={classes.root} {...other}>
       <Typography variant="h6">{children}</Typography>
@@ -49,6 +52,9 @@ const DialogContent = withStyles((theme) => ({
 }))(MuiDialogContent);
 
 export default function ListFollowModal({ open, setOpen, title, list }) {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("xs"));
+
   const handleClose = () => {
     setOpen(false);
   };
@@ -61,6 +67,7 @@ export default function ListFollowModal({ open, setOpen, title, list }) {
         open={open}
         fullWidth
         maxWidth="xs"
+        fullScreen={fullScreen}
       >
         <DialogTitle
           align="center"

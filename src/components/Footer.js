@@ -6,10 +6,15 @@ import { makeStyles } from "@material-ui/core/styles";
 const useStyles = makeStyles((theme) => ({
   footerContainer: {
     marginBottom: 52,
+    marginTop: 52,
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
   },
   footer: {
     textAlign: "center",
     justifyContent: "center",
+
     "& a": {
       margin: "0 8px 12px 8px",
       fontSize: "14px",
