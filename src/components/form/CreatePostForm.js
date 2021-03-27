@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 import { Avatar, Grid, Paper, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
@@ -39,7 +40,11 @@ function CreatePostForm() {
     <Paper variant="outlined" style={{ marginBottom: "30px", padding: "10px" }}>
       <Grid container alignItems="center">
         <Grid item>
-          <Avatar src={auth.user.avatar?.url} />
+          <Avatar
+            component={Link}
+            to={`/${auth.user.username}`}
+            src={auth.user.avatar?.url}
+          />
         </Grid>
         <Grid item style={{ flex: "1", marginLeft: "10px" }}>
           <Button

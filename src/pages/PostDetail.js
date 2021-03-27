@@ -40,6 +40,8 @@ import CardAction from "../components/card/CardAction";
 import CommentPost from "../components/comments/CommentPost";
 import { useScroll } from "../utils/useScroll";
 import PostDetailSkeleton from "../components/loading/PostDetailSkeleton";
+import useFollow from "../utils/useFollow";
+import FollowModal from "../components/modal/FollowModal";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -111,6 +113,7 @@ function PostDetail() {
   const [post, setPost] = useState("");
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [openFollowModal, setOpenFollowModal] = useState(false);
   const [page, setPage] = useState(1);
   const [comment, setComment] = useState("");
   const [cmtLoading, setCmtLoading] = useState(false);
@@ -122,6 +125,10 @@ function PostDetail() {
   const auth = useSelector((state) => state.auth);
   const { comments, status, totalComments, limit } = useSelector(
     (state) => state.comments
+  );
+  const { followLoading, handleFollowAction, handleUnFollowAction } = useFollow(
+    post.postedBy?._id,
+    auth.token
   );
   const classes = useStyles();
   const { id } = useParams();
@@ -234,9 +241,21 @@ function PostDetail() {
           </Button>
         </div>
       ) : checkUserIsFollow(post.postedBy?._id) ? (
-        <Button>Following</Button>
+        <Button onClick={() => setOpenFollowModal(true)}>
+          {followLoading ? (
+            <CircularProgress size={25} color="primary" />
+          ) : (
+            "Following"
+          )}
+        </Button>
       ) : (
-        <Button>Follow</Button>
+        <Button color="primary" onClick={handleFollowAction}>
+          {followLoading ? (
+            <CircularProgress size={25} color="primary" />
+          ) : (
+            "Follow"
+          )}
+        </Button>
       )}
     </Grid>
   );
@@ -388,6 +407,12 @@ function PostDetail() {
         open={open}
         setOpen={setOpen}
         handleRemovePost={handleRemovePost}
+      />
+      <FollowModal
+        open={openFollowModal}
+        setOpen={setOpenFollowModal}
+        user={post.postedBy}
+        handleUnFollowAction={handleUnFollowAction}
       />
     </Container>
   );

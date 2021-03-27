@@ -210,6 +210,8 @@ function CommentPostList({ comment }) {
       <ListItem key={commentPost._id} disableGutters>
         <ListItemAvatar>
           <Avatar
+            component={Link}
+            to={`/${commentPost.user?.username}`}
             src={commentPost.user?.avatar?.url}
             alt={commentPost.user.username}
           />
@@ -316,7 +318,12 @@ function CommentPostList({ comment }) {
           {commentPost.reply.map((cmt, index) => (
             <ListItem key={index} className={classes.nested}>
               <ListItemAvatar>
-                <Avatar src={cmt.user_rep_avatar} alt={cmt.username_comment} />
+                <Avatar
+                  component={Link}
+                  to={`/${cmt.user_rep_name}`}
+                  src={cmt.user_rep_avatar}
+                  alt={cmt.username_comment}
+                />
               </ListItemAvatar>
               <ListItemText
                 primary={
@@ -409,7 +416,7 @@ function CommentPostList({ comment }) {
                     <Chip
                       size="small"
                       variant="outlined"
-                      label={username_comment}
+                      label={`@${username_comment}`}
                     />
                   </InputAdornment>
                 }

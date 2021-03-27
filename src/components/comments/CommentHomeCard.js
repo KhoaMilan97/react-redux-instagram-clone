@@ -8,7 +8,7 @@ function CommentHomeCard({ comments }) {
   return (
     <>
       <List style={{ paddingTop: 0, paddingBottom: 0 }}>
-        {comments.map((comment) => (
+        {comments.slice(0, 2).map((comment) => (
           <ListCommentHomeCard key={comment._id} comment={comment} />
         ))}
       </List>

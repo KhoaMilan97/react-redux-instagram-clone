@@ -22,11 +22,7 @@ import { Button, CardMedia } from "@material-ui/core";
 import SimpleSlider from "./SimpleSlider";
 import CardAction from "./CardAction";
 import CommentHomeCard from "../comments/CommentHomeCard";
-import {
-  createComment,
-  getComment,
-  getCommentCount,
-} from "../../functions/comment";
+import { createComment, getComment } from "../../functions/comment";
 import CardModal from "../modal/CardModal";
 
 const useStyles = makeStyles((theme) => ({
@@ -82,7 +78,7 @@ const HomeCard = forwardRef((props, ref) => {
   const [postCard, setPostCard] = useState(post);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
-  const [totalComment, setTotalComment] = useState(0);
+
   const [likeCount, setLikeCount] = useState(post.likes.length);
   const [open, setOpen] = useState(false);
 
@@ -102,19 +98,9 @@ const HomeCard = forwardRef((props, ref) => {
       });
   }, [post._id, auth.token]);
 
-  const getPostCommentCount = useCallback(() => {
-    getCommentCount(post._id, auth.token).then((res) =>
-      setTotalComment(res.data)
-    );
-  }, [post._id, auth.token]);
-
   useEffect(() => {
     getPostComment();
   }, [getPostComment]);
-
-  useEffect(() => {
-    getPostCommentCount();
-  }, [getPostCommentCount]);
 
   const handleCreateComment = () => {
     createComment(
@@ -127,7 +113,7 @@ const HomeCard = forwardRef((props, ref) => {
     )
       .then((res) => {
         getPostComment();
-        getPostCommentCount();
+
         setComment("");
       })
       .catch((err) => {
@@ -188,13 +174,13 @@ const HomeCard = forwardRef((props, ref) => {
           </span>{" "}
           {postCard.title}
         </Typography>
-        {totalComment > 2 && (
+        {comments.length > 2 && (
           <Typography
             className={classes.link}
             component={Link}
             to={`/post/${postCard._id}`}
           >
-            View all {totalComment - 2} comments
+            View all {comments.length} comments
           </Typography>
         )}
 

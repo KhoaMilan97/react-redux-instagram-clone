@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import _ from "lodash";
 
 import Container from "@material-ui/core/Container";
@@ -7,7 +8,6 @@ import { makeStyles, useTheme } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import Grid from "@material-ui/core/Grid";
 import Avatar from "@material-ui/core/Avatar";
-import MuiLink from "@material-ui/core/Link";
 import Typography from "@material-ui/core/Typography";
 import { CircularProgress, Hidden } from "@material-ui/core";
 
@@ -15,28 +15,12 @@ import HomeCard from "../components/card/HomeCard";
 import CreatePostForm from "../components/form/CreatePostForm";
 import { getFollowerPost } from "../functions/post";
 import { suggestUser } from "../functions/user";
+import SuggestUser from "../components/SuggestUser";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
     width: 60,
     height: 60,
-  },
-  avatarSmall: {
-    width: 40,
-    height: 40,
-  },
-  link: {
-    width: "100%",
-    textAlign: "right",
-    display: "inline-block",
-    fontSize: "14px",
-    lineHeight: "14px",
-    color: "#0095f6",
-    fontWeight: "600",
-    "&:hover": {
-      cursor: "pointer",
-      textDecoration: "none",
-    },
   },
   name: {
     color: "#262626",
@@ -127,6 +111,10 @@ const Home = () => {
           >
             <CreatePostForm />
 
+            {posts.length === 0 && !loadingPost && (
+              <Typography variant="body1">No posts</Typography>
+            )}
+
             {posts.map((post, index) => {
               if (posts.length > 5 && posts.length === index + 1) {
                 return (
@@ -157,18 +145,27 @@ const Home = () => {
                     ) ? (
                       <Avatar
                         className={classes.avatar}
+                        component={Link}
+                        to={`/${user.username}`}
                         src={user.avatar?.url}
                         alt="profile picture"
                       />
                     ) : (
                       <Avatar
                         className={classes.avatar}
+                        component={Link}
+                        to={`/${user.username}`}
                         alt="profile picture"
                       />
                     )}
                   </Grid>
                   <Grid item container alignItems="center" md>
-                    <Typography className={classes.name} variant="body2">
+                    <Typography
+                      component={Link}
+                      to={`/${user.username}`}
+                      className={classes.name}
+                      variant="body2"
+                    >
                       {user.username}
                     </Typography>
                     <Typography style={{ color: "#8e8e8e" }}>
@@ -188,40 +185,12 @@ const Home = () => {
                     <Typography variant="body2" style={{ color: "#8e8e8e" }}>
                       Suggestions For You
                     </Typography>
-                    <Typography variant="body2">See all</Typography>
+                    {/* <Typography variant="body2">See all</Typography> */}
                   </Grid>
                 </Grid>
                 {suggestListUser.length > 0 &&
                   suggestListUser.map((u) => (
-                    <Grid
-                      key={u._id}
-                      item
-                      container
-                      style={{ marginBottom: 10 }}
-                    >
-                      <Grid item md={2}>
-                        {u.avatar?.url ? (
-                          <Avatar
-                            className={classes.avatarSmall}
-                            src={u.avatar?.url}
-                            alt="profile picture"
-                          />
-                        ) : (
-                          <Avatar
-                            className={classes.avatarSmall}
-                            alt="profile picture"
-                          />
-                        )}
-                      </Grid>
-                      <Grid item container alignItems="center" md>
-                        <Typography className={classes.name} variant="body2">
-                          {u.username}
-                        </Typography>
-                      </Grid>
-                      <Grid item container alignItems="center" md>
-                        <MuiLink className={classes.link}>Follow</MuiLink>
-                      </Grid>
-                    </Grid>
+                    <SuggestUser key={u._id} user={u} />
                   ))}
               </Grid>
             </Grid>

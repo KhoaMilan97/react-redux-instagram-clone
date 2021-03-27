@@ -78,14 +78,23 @@ export default function ListFollowModal({ open, setOpen, title, list }) {
         </DialogTitle>
         <DialogContent dividers>
           <List>
-            {list.length > 0 &&
+            {list.length > 0 ? (
               list.map((user) => (
                 <ListItemFollow
                   key={user._id}
                   userFollow={user}
                   handleClose={handleClose}
                 />
-              ))}
+              ))
+            ) : title === "Followers" ? (
+              <Typography align="center">
+                You'll see all the people who follow you here.
+              </Typography>
+            ) : (
+              <Typography align="center">
+                You'll see all the people you follow here.
+              </Typography>
+            )}
           </List>
         </DialogContent>
       </Dialog>

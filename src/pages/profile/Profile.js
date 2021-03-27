@@ -120,6 +120,7 @@ function Profile() {
   const auth = useSelector((state) => state.auth);
   const theme = useTheme();
   const matchesSM = useMediaQuery(theme.breakpoints.down("sm"));
+  const matchesXS = useMediaQuery(theme.breakpoints.down("xs"));
   const postsRef = useRef();
 
   let { path, url } = useRouteMatch();
@@ -303,7 +304,11 @@ function Profile() {
       <Container maxWidth="md">
         <Grid container justify={matchesSM ? "center" : undefined}>
           <Grid item container sm={4} justify="center">
-            {user.avatar?.url ? (
+            {user.avatar?.url &&
+            !(
+              Object.keys(user.avatar?.url).length === 0 &&
+              user.avatar?.url.constructor === Object
+            ) ? (
               <Avatar
                 alt="profile picture"
                 src={user.avatar?.url}
@@ -314,7 +319,7 @@ function Profile() {
             )}
           </Grid>
           <Grid
-            style={{ textAlign: matchesSM ? "center" : "left" }}
+            style={{ textAlign: matchesXS ? "center" : "left" }}
             item
             sm={8}
           >
@@ -329,7 +334,7 @@ function Profile() {
             />
 
             <Grid container style={{ marginTop: 10 }}>
-              <Grid item style={{ marginLeft: matchesSM ? 15 : 0 }}>
+              <Grid item style={{ marginLeft: matchesXS ? 15 : 0 }}>
                 <Typography>
                   <span className={classes.number}>{posts.length}</span> posts
                 </Typography>
