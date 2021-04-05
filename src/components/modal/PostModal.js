@@ -126,6 +126,8 @@ export default function PostModal({ open, setOpen }) {
       .catch((err) => {
         console.log(err);
         setLoading(false);
+        err.response.data.msg &&
+          dispatch(setMessage(err.response.data.msg, "error"));
         setOpen(false);
       });
   };

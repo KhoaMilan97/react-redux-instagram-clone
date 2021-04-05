@@ -17,7 +17,7 @@ import FormControl from "@material-ui/core/FormControl";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Input from "@material-ui/core/Input";
 import Divider from "@material-ui/core/Divider";
-import { Button, CardMedia } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 
 import SimpleSlider from "./SimpleSlider";
 import CardAction from "./CardAction";
@@ -29,16 +29,10 @@ const useStyles = makeStyles((theme) => ({
   root: {
     width: "100%",
     marginBottom: "50px",
+    minHeight: "450px",
   },
   cardContent: {
     paddingBottom: "14px",
-  },
-  media: {
-    // paddingTop: "56.25%", // 16:9
-    paddingTop: "125%",
-    width: "100%",
-    height: 0,
-    backgroundSize: "100% auto",
   },
 
   avatar: {
@@ -83,6 +77,9 @@ const HomeCard = forwardRef((props, ref) => {
   const [open, setOpen] = useState(false);
 
   const auth = useSelector((state) => state.auth);
+
+  // let imgHeight =
+  //   (postCard.images[0]?.width / postCard.images[0]?.height) * 100;
 
   const classes = useStyles();
 
@@ -147,15 +144,7 @@ const HomeCard = forwardRef((props, ref) => {
           </Link>
         }
       />
-      {postCard.images.length > 1 ? (
-        <SimpleSlider images={postCard.images} />
-      ) : (
-        <CardMedia
-          image={postCard.images[0]?.url}
-          title="slide"
-          className={classes.media}
-        />
-      )}
+      {postCard.images.length > 0 && <SimpleSlider images={postCard.images} />}
 
       <CardAction
         post={postCard}

@@ -106,7 +106,12 @@ function EditPost() {
 
   return (
     <Container maxWidth="sm">
-      <Typography variant="h5" align="center">
+      <Typography
+        style={{ textTransform: "uppercase", fontWeight: 600 }}
+        variant="h5"
+        color="primary"
+        align="center"
+      >
         Edit post
       </Typography>
       <Divider style={{ margin: "10px 0" }} />

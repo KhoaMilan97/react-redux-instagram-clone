@@ -53,26 +53,36 @@ const Home = () => {
     postsRef.current = posts;
   }, [posts]);
 
-  const getPost = useCallback(() => {
-    setLoadingPost(true);
-    getFollowerPost(user._id, page, token)
-      .then((res) => {
-        let newArr = [...postsRef.current, ...res.data];
-        newArr = _.uniqBy(newArr, "_id");
-        setPosts(newArr);
-        setHasMore(res.data.length > 0);
+  const getPost = useCallback(
+    (isCancelled) => {
+      setLoadingPost(true);
+      getFollowerPost(user._id, page, token)
+        .then((res) => {
+          if (!isCancelled) {
+            let newArr = [...postsRef.current, ...res.data];
+            newArr = _.uniqBy(newArr, "_id");
+            setPosts(newArr);
+            setHasMore(res.data.length > 0);
 
-        setLoadingPost(false);
-      })
-      .catch((err) => {
-        console.log(err);
+            setLoadingPost(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
 
-        setLoadingPost(false);
-      });
-  }, [user._id, token, page]);
+          setLoadingPost(false);
+        });
+    },
+    [user._id, token, page]
+  );
 
   useEffect(() => {
-    getPost();
+    let isCancelled = false;
+    getPost(isCancelled);
+
+    return () => {
+      isCancelled = true;
+    };
   }, [getPost]);
 
   useEffect(() => {

@@ -237,7 +237,7 @@ function CommentPostList({ comment }) {
           secondary={
             <>
               <Typography style={{ fontSize: "14px" }} component="span">
-                {moment(commentPost.createdAt).fromNow()}
+                {moment(commentPost.createdAt).fromNow(true)}
               </Typography>
               {likeCount > 0 && (
                 <Typography
@@ -352,7 +352,7 @@ function CommentPostList({ comment }) {
                 secondary={
                   <>
                     <Typography style={{ fontSize: "14px" }} component="span">
-                      {cmt.createdAt ? moment(cmt.createdAt).fromNow() : ""}
+                      {cmt.createdAt ? moment(cmt.createdAt).fromNow(true) : ""}
                     </Typography>
                     {/* {likeCount > 0 && (
                       <Typography

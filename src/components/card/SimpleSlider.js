@@ -9,14 +9,18 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import Skeleton from "@material-ui/lab/Skeleton";
 
 const useStyles = makeStyles((theme) => ({
   media: {
-    // paddingTop: "56.25%", // 16:9
-    paddingTop: "125%",
-    width: "100%",
-    height: 0,
-    backgroundSize: "100% auto",
+    // width: "100%",
+    // height: "100%",
+    // objectFit: "cover",
+
+    height: "auto",
+    width: "auto",
+    objectFit: "unset !important",
+    maxWidth: "100%",
 
     "&:focus": {
       border: "none",
@@ -25,6 +29,8 @@ const useStyles = makeStyles((theme) => ({
   },
   mediaRoot: {
     display: "block !important",
+    minHeight: "300px",
+    //maxHeight: "800px",
     "&:focus": {
       border: "none",
       outline: "none",
@@ -40,6 +46,11 @@ const useStyles = makeStyles((theme) => ({
   simpleSlide: {
     position: "relative",
     height: "100%",
+    "& .slick-track": {
+      display: "flex !important",
+      alignItems: "center !important",
+      justifyContent: "center !important",
+    },
     "& .slick-dots": {
       bottom: (props) => props.bottom,
     },
@@ -149,11 +160,21 @@ function SimpleSlider({ images, ...props }) {
         {images.length > 0 &&
           images.map((image) => (
             <div key={image.public_id} className={classes.mediaRoot}>
-              <CardMedia
-                image={image.url}
-                title="slide"
-                className={classes.media}
-              />
+              {!image.public_id ? (
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  className={classes.media}
+                  style={{ height: "600px" }}
+                />
+              ) : (
+                <CardMedia
+                  image={image.url}
+                  title="slide"
+                  className={classes.media}
+                  component="img"
+                />
+              )}
             </div>
           ))}
       </Slider>

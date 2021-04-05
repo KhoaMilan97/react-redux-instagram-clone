@@ -12,6 +12,7 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Avatar from "@material-ui/core/Avatar";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
+import ClearIcon from "@material-ui/icons/Clear";
 
 import { searchUser } from "../../functions/user";
 
@@ -69,6 +70,9 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     right: 7,
     top: 7,
+    "&:hover": {
+      cursor: "pointer",
+    },
   },
   root: {
     width: "100%",
@@ -173,6 +177,13 @@ function Search() {
           onFocus={() => setShow(true)}
         />
         {loading && <CircularProgress className={classes.circularProgress} />}
+        {!loading && requestCount > 0 && (
+          <ClearIcon
+            onClick={handleClose}
+            color="primary"
+            className={classes.circularProgress}
+          />
+        )}
         {users.length > 0 && renderListProfile()}
       </div>
     </ClickAwayListener>

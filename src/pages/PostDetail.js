@@ -12,7 +12,6 @@ import {
   Button,
   Paper,
   Divider,
-  CardMedia,
   CardHeader,
   CardContent,
   FormControl,
@@ -48,24 +47,13 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 0,
     width: "100%",
     height: "100%",
+    minHeight: "450px",
   },
   username: {
     padding: "0 15px",
   },
   rightBox: {
     padding: "15px 0 15px 15px",
-  },
-  media: {
-    // paddingTop: "56.25%", // 16:9
-    paddingTop: "125%",
-    width: "100%",
-    height: 0,
-    minHeight: "450px",
-    backgroundSize: "100% auto",
-    "&:focus": {
-      border: "none",
-      outline: "none",
-    },
   },
 
   input: {
@@ -95,7 +83,7 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     height: "100%",
-    maxHeight: "592px",
+    //maxHeight: "592px",
     width: "100%",
     [theme.breakpoints.down("md")]: {
       width: "100%",
@@ -283,17 +271,11 @@ function PostDetail() {
           <Hidden mdUp>{titleCard}</Hidden>
           <Grid item container>
             <Card className={classes.card} variant="outlined">
-              {post.images?.length > 1 ? (
+              {post.images?.length > 0 && (
                 <SimpleSlider
                   images={post.images}
                   bottom="10px"
                   color="white"
-                />
-              ) : (
-                <CardMedia
-                  image={post.images[0]?.url}
-                  title="slide"
-                  className={classes.media}
                 />
               )}
             </Card>
@@ -338,7 +320,7 @@ function PostDetail() {
                     </Typography>
                   </>
                 }
-                subheader={moment(post.createdAt).fromNow()}
+                subheader={moment(post.createdAt).fromNow(true)}
               />
               <CardContent
                 className={classes.cardContent}
@@ -366,7 +348,7 @@ function PostDetail() {
                   {likeCount} {likeCount > 1 ? "likes" : "like"}
                 </Typography>
                 <Typography className={classes.time}>
-                  {moment(post.createdAt).fromNow()}
+                  {moment(post.createdAt).fromNow(true)}
                 </Typography>
               </div>
               <Divider variant="fullWidth" />
