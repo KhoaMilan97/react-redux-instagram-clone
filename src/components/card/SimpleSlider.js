@@ -13,14 +13,14 @@ import Skeleton from "@material-ui/lab/Skeleton";
 
 const useStyles = makeStyles((theme) => ({
   media: {
-    // width: "100%",
-    // height: "100%",
-    // objectFit: "cover",
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
 
-    height: "auto",
-    width: "auto",
-    objectFit: "unset !important",
-    maxWidth: "100%",
+    // height: "auto",
+    // width: "auto",
+    // objectFit: "unset !important",
+    // maxWidth: "100%",
 
     "&:focus": {
       border: "none",

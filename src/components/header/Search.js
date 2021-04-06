@@ -81,7 +81,7 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     borderRadius: "3px",
     top: "40px",
-    maxHeight: "70vh",
+    maxHeight: 300,
     overflowY: "auto",
   },
 }));

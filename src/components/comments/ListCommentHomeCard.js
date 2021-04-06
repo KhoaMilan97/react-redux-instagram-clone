@@ -8,14 +8,22 @@ import IconButton from "@material-ui/core/IconButton";
 import FavoriteBorderIcon from "@material-ui/icons/FavoriteBorder";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import Box from "@material-ui/core/Box";
+import { makeStyles } from "@material-ui/core/styles";
 
 import { likeComment, unLikeComment } from "../../functions/comment";
+
+const useStyles = makeStyles((theme) => ({
+  secondaryText: {
+    color: "rgb(38, 38, 38)",
+  },
+}));
 
 function ListCommentHomeCard({ comment }) {
   const [commentPost, setCommentPost] = useState(comment);
   const [loading, setLoading] = useState(false);
   const { user, token } = useSelector((state) => state.auth);
   const [isLiked, setIsLiked] = useState(false);
+  const classes = useStyles();
 
   useEffect(() => {
     const userIsLiked = commentPost.likes.some((like) => like === user._id);
@@ -55,12 +63,23 @@ function ListCommentHomeCard({ comment }) {
   return (
     <>
       <ListItem style={{ paddingTop: 0, paddingBottom: 0 }} disableGutters>
-        <Box textAlign="right" style={{ paddingRight: 5, fontSize: "14px" }}>
+        <Box
+          textAlign="right"
+          style={{
+            paddingRight: 5,
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "#262626",
+          }}
+        >
           {comment.user.username}
         </Box>
         <ListItemText
           secondaryTypographyProps={{ align: "left" }}
           secondary={comment.content}
+          classes={{
+            secondary: classes.secondaryText,
+          }}
           style={{ marginTop: 0, marginBottom: 0 }}
         />
 

@@ -209,7 +209,7 @@ export default function PostModal({ open, setOpen }) {
         </DialogContent>
         <DialogActions>
           <Button
-            disabled={!title}
+            disabled={!title || !images.length}
             fullWidth
             onClick={handleCreatePost}
             color="primary"

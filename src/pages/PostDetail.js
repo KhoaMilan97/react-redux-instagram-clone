@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 0,
     width: "100%",
     height: "100%",
-    minHeight: "450px",
+    //minHeight: "450px",
   },
   username: {
     padding: "0 15px",
@@ -85,14 +85,23 @@ const useStyles = makeStyles((theme) => ({
     height: "100%",
     //maxHeight: "592px",
     width: "100%",
+    overflow: "hidden",
     [theme.breakpoints.down("md")]: {
       width: "100%",
     },
   },
   cardContent: {
+    flexGrow: 1,
+    overflowY: "scroll",
     "&::-webkit-scrollbar": {
       width: 0 /* Remove scrollbar space */,
       background: "transparent" /* Optional: just make scrollbar invisible */,
+    },
+    height: "100px",
+    [theme.breakpoints.down("sm")]: {
+      height: "auto",
+      maxHeight: "600px",
+      overflowY: "scroll",
     },
   },
 }));
@@ -322,10 +331,7 @@ function PostDetail() {
                 }
                 subheader={moment(post.createdAt).fromNow(true)}
               />
-              <CardContent
-                className={classes.cardContent}
-                style={{ flexGrow: 1, overflowY: "scroll" }}
-              >
+              <CardContent className={classes.cardContent}>
                 <CommentPost comments={comments} status={status} ref={elRef} />
                 {totalComments > comments.length && status === "succeeded" && (
                   <IconButton

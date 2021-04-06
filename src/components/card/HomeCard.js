@@ -65,6 +65,11 @@ const useStyles = makeStyles((theme) => ({
     color: "#8e8e8e",
     fontSize: "14px",
   },
+  more: {
+    "&:hover": {
+      cursor: "pointer",
+    },
+  },
 }));
 
 const HomeCard = forwardRef((props, ref) => {
@@ -72,6 +77,7 @@ const HomeCard = forwardRef((props, ref) => {
   const [postCard, setPostCard] = useState(post);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
+  const [showMore, setShowMore] = useState(false);
 
   const [likeCount, setLikeCount] = useState(post.likes.length);
   const [open, setOpen] = useState(false);
@@ -157,11 +163,22 @@ const HomeCard = forwardRef((props, ref) => {
         <Typography>
           {likeCount} {likeCount > 1 ? "likes" : "like"}
         </Typography>
-        <Typography variant="body2" color="textSecondary" component="p">
-          <span style={{ color: "#262626" }}>
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          style={{ color: "inherit" }}
+          component="p"
+        >
+          <span style={{ color: "#262626", fontWeight: 600 }}>
             {postCard.postedBy?.username}
           </span>{" "}
-          {postCard.title}
+          {showMore ? postCard.title : `${postCard.title.substr(0, 50)}...`}
+          {!showMore && postCard.title.length > 50 && (
+            <span className={classes.more} onClick={() => setShowMore(true)}>
+              {" "}
+              More
+            </span>
+          )}
         </Typography>
         {comments.length > 2 && (
           <Typography

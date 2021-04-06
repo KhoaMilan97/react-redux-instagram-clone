@@ -158,6 +158,7 @@ function EditPost() {
         variant="contained"
         color="primary"
         fullWidth
+        disabled={!titlePost || !images.length}
       >
         {imgLoading ? <CircularProgress size={20} /> : "Save"}
       </Button>
