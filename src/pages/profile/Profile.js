@@ -130,7 +130,7 @@ function Profile() {
     followLoading,
     handleFollowAction,
     handleUnFollowAction,
-  } = useFollow(user._id, auth.token);
+  } = useFollow(user?._id, auth.token);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -188,7 +188,7 @@ function Profile() {
   }, [username, auth.user]);
 
   useEffect(() => {
-    if (user?._id) {
+    if (user._id) {
       //setPostLoading(true);
       setLoadingPost(true);
       getPosts(user._id, page, auth.token)

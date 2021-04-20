@@ -1,6 +1,7 @@
 import { Route, Switch, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import io from "socket.io-client";
 
 import Hidden from "@material-ui/core/Hidden";
 
@@ -13,7 +14,7 @@ import Accounts from "./pages/Accounts";
 import Home from "./pages/Home";
 import Messages from "./pages/Messages";
 import Explore from "./pages/Explore";
-import Notifications from "./pages/Notifications";
+
 import PostDetail from "./pages/PostDetail";
 import Profile from "./pages/profile/Profile";
 import SignIn from "./pages/auth/SignIn";
@@ -29,6 +30,9 @@ import { setMessage } from "./redux/actions/messageAction";
 import EditPost from "./pages/post/EditPost";
 import Message from "./utils/Message";
 import ToolBarMargin from "./utils/ToolBarMargin";
+import { actionTypes } from "./redux/actions/actionType";
+import SocketClient from "./SocketClient";
+import { getNotifyAction } from "./redux/actions/notifyAction";
 
 function App() {
   const { pathname } = useLocation();
@@ -42,6 +46,21 @@ function App() {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
   const [pending, setPending] = useState(true);
+
+  useEffect(() => {
+    const socket = io();
+    dispatch({
+      type: actionTypes.SOCKET,
+      payload: socket,
+    });
+    return () => socket.close();
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (auth.token) {
+      dispatch(getNotifyAction(auth.token));
+    }
+  }, [auth.token, dispatch]);
 
   useEffect(() => {
     const firstLogin = localStorage.getItem("firstLogin");
@@ -70,6 +89,7 @@ function App() {
     <>
       {!hide && <Header />}
       <Message />
+      {auth.token && <SocketClient />}
       <Switch>
         <UserRoute sensitive exact path="/signup" component={SignUp} />
         <UserRoute sensitive exact path="/signin" component={SignIn} />
@@ -88,7 +108,7 @@ function App() {
         <PrivateRoute path="/accounts" component={Accounts} />
         <PrivateRoute path="/messages" component={Messages} />
         <PrivateRoute path="/explore" component={Explore} />
-        <PrivateRoute path="/notifications" component={Notifications} />
+
         <PrivateRoute path="/post/edit/:id" component={EditPost} />
         <PrivateRoute path="/post/:id" component={PostDetail} />
         <PrivateRoute path="/:username" component={Profile} />
@@ -105,3 +125,5 @@ function App() {
 }
 
 export default App;
+
+// #29 17'21s

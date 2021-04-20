@@ -41,6 +41,7 @@ import { useScroll } from "../utils/useScroll";
 import PostDetailSkeleton from "../components/loading/PostDetailSkeleton";
 import useFollow from "../utils/useFollow";
 import FollowModal from "../components/modal/FollowModal";
+import { removeNotifyAction } from "../redux/actions/notifyAction";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -119,7 +120,7 @@ function PostDetail() {
   const [executeScroll, elRef] = useScroll();
   const history = useHistory();
   const dispatch = useDispatch();
-  const auth = useSelector((state) => state.auth);
+  const { auth, socket } = useSelector((state) => state);
   const { comments, status, totalComments, limit } = useSelector(
     (state) => state.comments
   );
@@ -176,15 +177,23 @@ function PostDetail() {
     dispatch(getTotalCommentsAction(id, auth.token));
   }, [id, auth.token, dispatch]);
 
-  const handleRemovePost = () => {
-    removePosts(id, auth.token)
-      .then((res) => {
-        dispatch(setMessage("Delete post success!", "success"));
-        history.push(`/${auth.user.username}`);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  const handleRemovePost = async () => {
+    try {
+      const res = await removePosts(id, auth.token);
+      console.log(res);
+      dispatch(setMessage("Delete post success!", "success"));
+      history.push(`/${auth.user.username}`);
+      // Notify
+      const msg = {
+        id,
+        recipients: res.data.post.postedBy.followers,
+        url: `/post/${id}`,
+      };
+
+      await dispatch(removeNotifyAction({ msg, auth, socket }));
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleCreateComment = async () => {

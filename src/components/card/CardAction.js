@@ -57,22 +57,20 @@ function CardAction(props, ref) {
     setIsSaved(isPostSaved);
   }, [auth.user.saved, post._id]);
 
-  const handleLike = () => {
+  const handleLike = async () => {
     if (loading) return;
     setLoading(true);
     setIsLiked(true);
     setLikeCount((previousCount) => previousCount + 1);
-
-    likePost({ id: auth.user._id }, post._id, auth.token)
-      .then((res) => {
-        const newData = post._id === res.data._id ? res.data : post;
-        setPost(newData);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-      });
+    try {
+      const res = await likePost({ id: auth.user._id }, post._id, auth.token);
+      const newData = post._id === res.data._id ? res.data : post;
+      setPost(newData);
+      setLoading(false);
+    } catch (err) {
+      console.log(err);
+      setLoading(false);
+    }
   };
 
   const handleUnLike = () => {

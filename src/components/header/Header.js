@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, Fragment } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -18,6 +18,10 @@ import Paper from "@material-ui/core/Paper";
 import Popper from "@material-ui/core/Popper";
 import MenuList from "@material-ui/core/MenuList";
 import Hidden from "@material-ui/core/Hidden";
+import Badge from "@material-ui/core/Badge";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
 import AccountCircle from "@material-ui/icons/AccountCircle";
@@ -36,6 +40,7 @@ import { logOutUser } from "../../redux/actions/authAction";
 
 import bgNav from "../../assets/img/bg-nav.png";
 import Search from "./Search";
+import moment from "moment";
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -82,6 +87,17 @@ const useStyles = makeStyles((theme) => ({
       display: "block",
     },
   },
+  deleteNotify: {
+    display: "block",
+    textAlign: "right",
+    margin: "15px 10px 15px 0",
+    color: "red",
+    fontWeight: "400",
+    fontSize: "14px",
+    "&:hover": {
+      cursor: "pointer",
+    },
+  },
 }));
 
 const Header = () => {
@@ -89,7 +105,9 @@ const Header = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { user } = useSelector((state) => state.auth);
+  const notify = useSelector((state) => state.notify);
   const [open, setOpen] = React.useState(false);
+  const [openNotification, setOpenNotification] = useState(false);
   const anchorRef = React.useRef(null);
   const location = useLocation();
   const [active, setActive] = useState(0);
@@ -114,12 +132,6 @@ const Header = () => {
         icon: () => <ExploreOutlinedIcon />,
         activeIcon: () => <ExploreIcon />,
       },
-      {
-        link: "/notifications",
-        activeIndex: 4,
-        icon: () => <FavoriteBorderOutlinedIcon />,
-        activeIcon: () => <FavoriteIcon />,
-      },
     ],
     []
   );
@@ -140,6 +152,7 @@ const Header = () => {
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
     setActive(5);
+    setOpenNotification(false);
   };
 
   const handleClose = (event) => {
@@ -148,6 +161,14 @@ const Header = () => {
     }
 
     setOpen(false);
+  };
+
+  const handleCloseNotify = (event) => {
+    if (anchorRef.current && anchorRef.current.contains(event.target)) {
+      return;
+    }
+
+    setOpenNotification(false);
   };
 
   function handleListKeyDown(event) {
@@ -242,6 +263,87 @@ const Header = () => {
     </Popper>
   );
 
+  const renderNotification = (
+    <Popper
+      open={openNotification}
+      anchorEl={anchorRef.current}
+      role={undefined}
+      transition
+      disablePortal
+      placement="bottom-end"
+      style={{ zIndex: 1110 }}
+    >
+      {({ TransitionProps, placement }) => (
+        <Grow
+          {...TransitionProps}
+          style={{
+            transformOrigin:
+              placement === "bottom" ? "center top" : "center bottom",
+          }}
+        >
+          <Paper>
+            <ClickAwayListener onClickAway={handleCloseNotify}>
+              <List
+                id="menu-list-grow-1"
+                onKeyDown={handleListKeyDown}
+                style={{
+                  width: "100%",
+                  maxWidth: "500px",
+                  minWidth: "100px",
+                }}
+              >
+                {notify.length > 0 &&
+                  notify.map((n) => (
+                    <Fragment key={n._id}>
+                      <ListItem
+                        key={n._id}
+                        alignItems="flex-start"
+                        onClick={handleCloseNotify}
+                        component={Link}
+                        to={n.url}
+                      >
+                        <ListItemAvatar>
+                          <Avatar
+                            alt={n.user?.username}
+                            src={n.user?.avatar?.url}
+                          />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={
+                            <React.Fragment>
+                              <Typography component="b">
+                                {n.user?.username}{" "}
+                              </Typography>
+                              <span style={{ color: "#262626" }}>{n.text}</span>
+                            </React.Fragment>
+                          }
+                          secondary={n.content}
+                        />
+                      </ListItem>
+                      <Typography
+                        component="p"
+                        style={{
+                          paddingLeft: "1rem",
+                          fontSize: "14px",
+                          color: "#8e8e8e",
+                          marginTop: "-10px",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        {moment(n.createdAt).fromNow()}
+                      </Typography>
+                      {notify.length > 1 && <Divider />}
+                    </Fragment>
+                  ))}
+                <span className={classes.deleteNotify}>Delete All</span>
+              </List>
+            </ClickAwayListener>
+          </Paper>
+        </Grow>
+      )}
+    </Popper>
+  );
+
   return (
     <div className={classes.grow}>
       <AppBar position="fixed" className={classes.appBar} elevation={1}>
@@ -272,6 +374,27 @@ const Header = () => {
                     : route.icon()}
                 </IconButton>
               ))}
+              <IconButton
+                edge="end"
+                onClick={() => {
+                  setOpenNotification((prevOpen) => !prevOpen);
+                  setActive(4);
+                  setOpen(false);
+                }}
+                color="inherit"
+                aria-controls={
+                  openNotification ? "menu-list-grow-1" : undefined
+                }
+                aria-haspopup="true"
+              >
+                <Badge badgeContent={notify.length} color="error">
+                  {notify.length > 0 ? (
+                    <FavoriteIcon />
+                  ) : (
+                    <FavoriteBorderOutlinedIcon />
+                  )}
+                </Badge>
+              </IconButton>
 
               <IconButton
                 edge="end"
@@ -302,6 +425,7 @@ const Header = () => {
       </AppBar>
 
       {renderMenu}
+      {renderNotification}
       <section className={classes.toolBarMargin} />
 
       <AppBar position="fixed" className={classes.appBarBottom} elevation={1}>
@@ -326,6 +450,26 @@ const Header = () => {
                   : route.icon()}
               </IconButton>
             ))}
+
+            <IconButton
+              edge="end"
+              onClick={() => {
+                setOpenNotification((prevOpen) => !prevOpen);
+                setActive(4);
+                setOpen(false);
+              }}
+              color="inherit"
+              aria-controls={openNotification ? "menu-list-grow-1" : undefined}
+              aria-haspopup="true"
+            >
+              <Badge badgeContent={notify.length} color="error">
+                {notify.length > 0 ? (
+                  <FavoriteIcon />
+                ) : (
+                  <FavoriteBorderOutlinedIcon />
+                )}
+              </Badge>
+            </IconButton>
 
             <IconButton
               edge="end"

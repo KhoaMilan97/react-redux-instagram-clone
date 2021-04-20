@@ -24,6 +24,7 @@ import FileUpload from "../form/FileUpload";
 import { removeImages } from "../../functions/upload";
 import { createPost } from "../../functions/post";
 import { setMessage } from "../../redux/actions/messageAction";
+import { createNotifyAction } from "../../redux/actions/notifyAction";
 
 const styles = (theme) => ({
   root: {
@@ -87,7 +88,7 @@ export default function PostModal({ open, setOpen }) {
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const auth = useSelector((state) => state.auth);
+  const { auth, socket } = useSelector((state) => state);
   const classes = useStyles();
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -111,25 +112,35 @@ export default function PostModal({ open, setOpen }) {
       });
   };
 
-  const handleCreatePost = () => {
+  const handleCreatePost = async () => {
     let postedBy = auth.user._id;
     setLoading(true);
-    createPost({ title, images, postedBy }, auth.token)
-      .then((res) => {
-        console.log(res);
-        dispatch(setMessage("New Post is created.", "success"));
-        setTitle("");
-        setImages([]);
-        setLoading(false);
-        setOpen(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-        err.response.data.msg &&
-          dispatch(setMessage(err.response.data.msg, "error"));
-        setOpen(false);
-      });
+    try {
+      const res = await createPost({ title, images, postedBy }, auth.token);
+      dispatch(setMessage("New Post is created.", "success"));
+      setTitle("");
+      setImages([]);
+      setLoading(false);
+      setOpen(false);
+
+      // Notify
+      const msg = {
+        id: res.data.post._id,
+        text: "added new post",
+        recipients: res.data.post.postedBy.followers,
+        url: `/post/${res.data.post._id}`,
+        content: title,
+        image: images[0].url,
+      };
+
+      await dispatch(createNotifyAction({ msg, auth, socket }));
+    } catch (err) {
+      console.log(err);
+      setLoading(false);
+      err.response.data.msg &&
+        dispatch(setMessage(err.response.data.msg, "error"));
+      setOpen(false);
+    }
   };
 
   const handleClose = () => {

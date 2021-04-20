@@ -21,9 +21,9 @@ const SimpleEditor = ({ data, setDescription }) => {
             "insertdatetime media table paste code help wordcount",
           ],
           toolbar: "",
-          icons: "material",
-          skin: "material-outline",
-          content_css: "material-outline",
+          // icons: "material",
+          // skin: "material-outline",
+          // content_css: "material-outline",
         }}
         onEditorChange={handleEditorChange}
       />
