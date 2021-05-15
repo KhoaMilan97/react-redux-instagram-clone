@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, Fragment } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import moment from "moment";
 
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
@@ -22,6 +23,8 @@ import Badge from "@material-ui/core/Badge";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
+import Tooltip from "@material-ui/core/Tooltip";
+import ListSubheader from "@material-ui/core/ListSubheader";
 
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
 import AccountCircle from "@material-ui/icons/AccountCircle";
@@ -34,13 +37,22 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import EmailIcon from "@material-ui/icons/Email";
 import ExploreIcon from "@material-ui/icons/Explore";
 import FavoriteIcon from "@material-ui/icons/Favorite";
+import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
+import NotificationsActiveIcon from "@material-ui/icons/NotificationsActive";
+import NotificationsNoneIcon from "@material-ui/icons/NotificationsNone";
 
 import { logout } from "../../functions/auth";
 import { logOutUser } from "../../redux/actions/authAction";
 
 import bgNav from "../../assets/img/bg-nav.png";
 import Search from "./Search";
-import moment from "moment";
+
+import {
+  isReadNotifyAction,
+  deleteAllNotifiesAction,
+} from "../../redux/actions/notifyAction";
+import { actionTypes } from "../../redux/actions/actionType";
+import NotifyModalConfirm from "../modal/NotifyModalConfirm";
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -98,19 +110,45 @@ const useStyles = makeStyles((theme) => ({
       cursor: "pointer",
     },
   },
+  imageNotify: {
+    width: "80px",
+    height: "auto",
+    marginLeft: "10px",
+    borderRadius: "50%",
+  },
+  notification: {
+    width: "500px",
+    maxWidth: 600,
+    backgroundColor: theme.palette.background.paper,
+    position: "absolute",
+    borderRadius: "3px",
+    top: "50px",
+    maxHeight: 500,
+    overflowY: "auto",
+    right: "-25px",
+    [theme.breakpoints.down("xs")]: {
+      bottom: "40px",
+      top: "unset",
+      right: "-70px",
+      width: "350px",
+    },
+  },
 }));
 
 const Header = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
-  const { user } = useSelector((state) => state.auth);
-  const notify = useSelector((state) => state.notify);
+  const { user, token } = useSelector((state) => state.auth);
+  const { data: notify, sound } = useSelector((state) => state.notify);
   const [open, setOpen] = React.useState(false);
   const [openNotification, setOpenNotification] = useState(false);
+  const [openNotificationMobile, setOpenNotificationMobile] = useState(false);
   const anchorRef = React.useRef(null);
   const location = useLocation();
   const [active, setActive] = useState(0);
+  const [notifyUnRead, setNotifyUnRead] = useState(0);
+  const [openNotifyConfirm, setOpenNotifyConfirm] = useState(false);
 
   const routes = useMemo(
     () => [
@@ -149,10 +187,17 @@ const Header = () => {
     });
   }, [location, routes]);
 
+  useEffect(() => {
+    let newArr = notify.filter((item) => item.isRead === false);
+
+    setNotifyUnRead(newArr.length);
+  }, [notify]);
+
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
     setActive(5);
     setOpenNotification(false);
+    setOpenNotificationMobile(false);
   };
 
   const handleClose = (event) => {
@@ -163,12 +208,12 @@ const Header = () => {
     setOpen(false);
   };
 
-  const handleCloseNotify = (event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) {
-      return;
-    }
-
+  const handleCloseNotify = () => {
     setOpenNotification(false);
+  };
+
+  const handleCloseNotifyMobile = () => {
+    setOpenNotificationMobile(false);
   };
 
   function handleListKeyDown(event) {
@@ -194,6 +239,25 @@ const Header = () => {
       localStorage.removeItem("firstLogin");
       history.push("/signin");
     });
+  };
+
+  const handleReadNotification = (notify) => {
+    dispatch(isReadNotifyAction(notify, token));
+  };
+
+  const handleSound = () => {
+    dispatch({ type: actionTypes.UPDATE_SOUND, payload: !sound });
+  };
+
+  const handleDeleteAllNotifies = () => {
+    if (notifyUnRead === 0) {
+      dispatch(deleteAllNotifiesAction(token));
+      setOpenNotification(false);
+      setOpenNotificationMobile(false);
+      return;
+    }
+
+    setOpenNotifyConfirm(true);
   };
 
   const renderMenu = (
@@ -264,84 +328,103 @@ const Header = () => {
   );
 
   const renderNotification = (
-    <Popper
-      open={openNotification}
-      anchorEl={anchorRef.current}
-      role={undefined}
-      transition
-      disablePortal
-      placement="bottom-end"
-      style={{ zIndex: 1110 }}
-    >
-      {({ TransitionProps, placement }) => (
-        <Grow
-          {...TransitionProps}
-          style={{
-            transformOrigin:
-              placement === "bottom" ? "center top" : "center bottom",
-          }}
-        >
-          <Paper>
-            <ClickAwayListener onClickAway={handleCloseNotify}>
-              <List
-                id="menu-list-grow-1"
-                onKeyDown={handleListKeyDown}
+    <div className={classes.notification}>
+      <List
+        id="menu-list-grow-1"
+        subheader={
+          <ListSubheader
+            component="div"
+            disableSticky
+            style={{ display: "flex", justifyContent: "space-between" }}
+          >
+            Notifications{" "}
+            {sound ? (
+              <Tooltip title="Turn off Notifications">
+                <IconButton onClick={handleSound}>
+                  <NotificationsActiveIcon />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Turn on Notifications">
+                <IconButton onClick={handleSound}>
+                  <NotificationsNoneIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          </ListSubheader>
+        }
+        onKeyDown={handleListKeyDown}
+      >
+        {notify.length > 0 &&
+          notify.map((n) => (
+            <Fragment key={n._id}>
+              <ListItem
+                alignItems="center"
+                onClick={() => {
+                  handleCloseNotify();
+                  handleCloseNotifyMobile();
+                  handleReadNotification(n);
+                }}
+                component={Link}
+                to={n.url}
+              >
+                <ListItemAvatar>
+                  <Avatar alt={n.user?.username} src={n.user?.avatar?.url} />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <React.Fragment>
+                      <Typography component="b">{n.user?.username} </Typography>
+                      <span style={{ color: "#262626" }}>{n.text}</span>
+                    </React.Fragment>
+                  }
+                  secondary={
+                    n.content && (
+                      <Fragment>
+                        <Typography component="span">
+                          {n.content.slice(0, 20)}...
+                        </Typography>
+                      </Fragment>
+                    )
+                  }
+                />
+
+                {n.image && (
+                  <img
+                    src={n.image}
+                    alt={n.content}
+                    className={classes.imageNotify}
+                  />
+                )}
+                {n.isRead === false && (
+                  <FiberManualRecordIcon color="primary" />
+                )}
+              </ListItem>
+              <Typography
+                component="span"
                 style={{
-                  width: "100%",
-                  maxWidth: "500px",
-                  minWidth: "100px",
+                  fontSize: "14px",
+                  color: n.isRead ? "#8e8e8e" : "#0095f6",
+                  marginTop: n.content ? "-10px" : "0px",
+                  marginBottom: "10px",
+                  marginLeft: "15px",
+                  display: "block",
                 }}
               >
-                {notify.length > 0 &&
-                  notify.map((n) => (
-                    <Fragment key={n._id}>
-                      <ListItem
-                        key={n._id}
-                        alignItems="flex-start"
-                        onClick={handleCloseNotify}
-                        component={Link}
-                        to={n.url}
-                      >
-                        <ListItemAvatar>
-                          <Avatar
-                            alt={n.user?.username}
-                            src={n.user?.avatar?.url}
-                          />
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={
-                            <React.Fragment>
-                              <Typography component="b">
-                                {n.user?.username}{" "}
-                              </Typography>
-                              <span style={{ color: "#262626" }}>{n.text}</span>
-                            </React.Fragment>
-                          }
-                          secondary={n.content}
-                        />
-                      </ListItem>
-                      <Typography
-                        component="p"
-                        style={{
-                          paddingLeft: "1rem",
-                          fontSize: "14px",
-                          color: "#8e8e8e",
-                          marginTop: "-10px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        {moment(n.createdAt).fromNow()}
-                      </Typography>
-                      {notify.length > 1 && <Divider />}
-                    </Fragment>
-                  ))}
-                <span className={classes.deleteNotify}>Delete All</span>
-              </List>
-            </ClickAwayListener>
-          </Paper>
-        </Grow>
-      )}
-    </Popper>
+                {moment(n.createdAt).fromNow()}
+              </Typography>
+              <Divider />
+            </Fragment>
+          ))}
+
+        <span
+          onClick={handleDeleteAllNotifies}
+          className={classes.deleteNotify}
+        >
+          Delete All
+        </span>
+      </List>
+    </div>
   );
 
   return (
@@ -374,27 +457,31 @@ const Header = () => {
                     : route.icon()}
                 </IconButton>
               ))}
-              <IconButton
-                edge="end"
-                onClick={() => {
-                  setOpenNotification((prevOpen) => !prevOpen);
-                  setActive(4);
-                  setOpen(false);
-                }}
-                color="inherit"
-                aria-controls={
-                  openNotification ? "menu-list-grow-1" : undefined
-                }
-                aria-haspopup="true"
-              >
-                <Badge badgeContent={notify.length} color="error">
-                  {notify.length > 0 ? (
-                    <FavoriteIcon />
-                  ) : (
-                    <FavoriteBorderOutlinedIcon />
-                  )}
-                </Badge>
-              </IconButton>
+              <ClickAwayListener onClickAway={handleCloseNotify}>
+                <div style={{ position: "relative" }}>
+                  <IconButton
+                    onClick={() => {
+                      setOpenNotification((prevOpen) => !prevOpen);
+                      setActive(4);
+                      setOpen(false);
+                    }}
+                    color="inherit"
+                    aria-controls={
+                      openNotification ? "menu-list-grow-1" : undefined
+                    }
+                    aria-haspopup="true"
+                  >
+                    <Badge badgeContent={notifyUnRead} color="error">
+                      {notify.length > 0 ? (
+                        <FavoriteIcon />
+                      ) : (
+                        <FavoriteBorderOutlinedIcon />
+                      )}
+                    </Badge>
+                  </IconButton>
+                  <Grow in={openNotification}>{renderNotification}</Grow>
+                </div>
+              </ClickAwayListener>
 
               <IconButton
                 edge="end"
@@ -425,8 +512,14 @@ const Header = () => {
       </AppBar>
 
       {renderMenu}
-      {renderNotification}
+
       <section className={classes.toolBarMargin} />
+      <NotifyModalConfirm
+        open={openNotifyConfirm}
+        setOpen={setOpenNotifyConfirm}
+        dispatch={dispatch}
+        notifyUnRead={notifyUnRead}
+      />
 
       <AppBar position="fixed" className={classes.appBarBottom} elevation={1}>
         <Toolbar className={classes.toolbarContainer}>
@@ -450,26 +543,27 @@ const Header = () => {
                   : route.icon()}
               </IconButton>
             ))}
-
-            <IconButton
-              edge="end"
-              onClick={() => {
-                setOpenNotification((prevOpen) => !prevOpen);
-                setActive(4);
-                setOpen(false);
-              }}
-              color="inherit"
-              aria-controls={openNotification ? "menu-list-grow-1" : undefined}
-              aria-haspopup="true"
-            >
-              <Badge badgeContent={notify.length} color="error">
-                {notify.length > 0 ? (
-                  <FavoriteIcon />
-                ) : (
-                  <FavoriteBorderOutlinedIcon />
-                )}
-              </Badge>
-            </IconButton>
+            <ClickAwayListener onClickAway={handleCloseNotifyMobile}>
+              <div style={{ position: "relative" }}>
+                <IconButton
+                  onClick={() => {
+                    setOpenNotificationMobile((prevOpen) => !prevOpen);
+                    setActive(4);
+                    setOpen(false);
+                  }}
+                  color="inherit"
+                >
+                  <Badge badgeContent={notify.length} color="error">
+                    {notify.length > 0 ? (
+                      <FavoriteIcon />
+                    ) : (
+                      <FavoriteBorderOutlinedIcon />
+                    )}
+                  </Badge>
+                </IconButton>
+                <Grow in={openNotificationMobile}>{renderNotification}</Grow>
+              </div>
+            </ClickAwayListener>
 
             <IconButton
               edge="end"

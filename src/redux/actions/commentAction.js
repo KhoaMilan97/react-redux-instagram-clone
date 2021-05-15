@@ -1,73 +1,142 @@
 import { actionTypes } from "./actionType";
 import {
-  getPostComments,
   createComment,
+  updateComment,
+  likeComment,
+  unLikeComment,
   deleteComment,
-  getCommentCount,
 } from "../../functions/comment";
+import { setMessage } from "./messageAction";
+import { createNotifyAction, removeNotifyAction } from "./notifyAction";
 
-const getComments = () => ({
-  type: actionTypes.GET_COMMENTS,
-});
+export const createCommentAction =
+  (post, newComment, auth, socket) => async (dispatch) => {
+    const newPost = { ...post, comments: [...post.comments, newComment] };
+    dispatch({ type: actionTypes.UPDATE_POST, payload: newPost });
+    try {
+      const res = await createComment(newComment, auth.token);
+      const newData = { ...res.data.comment, postedBy: auth.user };
+      const newPost = { ...post, comments: [...post.comments, newData] };
+      dispatch({ type: actionTypes.UPDATE_POST, payload: newPost });
 
-const getCommentsFail = () => ({
-  type: actionTypes.GET_COMMENTS_FAILED,
-});
+      // socket
+      socket.emit("createComment", newPost);
 
-const getCommentsSuccess = (comments) => ({
-  type: actionTypes.GET_COMMENTS_SUCCEEDED,
-  payload: comments,
-});
+      // Notify
+      const msg = {
+        id: res.data.comment._id,
+        text: newComment.reply
+          ? "mentioned you in comment"
+          : "has commented on your post",
+        recipients: newComment.reply
+          ? [newComment.tag._id]
+          : [post.postedBy._id],
+        url: `/post/${post._id}`,
+        content: post.title,
+        image: post.images[0].url,
+      };
 
-const getTotalComments = (total) => ({
-  type: actionTypes.GET_TOTAL_COMMENTS,
-  payload: total,
-});
+      dispatch(createNotifyAction({ msg, auth, socket }));
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-export const clearOldComments = () => ({
-  type: actionTypes.CLEAR_OLD_COMMENTS,
-});
+export const updateCommentAction =
+  ({ post, comment, content }, auth) =>
+  async (dispatch) => {
+    const index = post.comments.findIndex((cmt) => cmt._id === comment._id);
+    const newComments = [...post.comments];
+    newComments[index].content = content;
+    const newPost = { ...post, comments: newComments };
 
-export const getTotalCommentsAction = (id, token) => async (dispatch) => {
+    dispatch({ type: actionTypes.UPDATE_POST, payload: newPost });
+
+    try {
+      await updateComment(comment._id, { content }, auth.token);
+    } catch (err) {
+      console.log(err);
+      err.response?.data?.msg &&
+        dispatch(setMessage(err.response.data.msg, "error"));
+    }
+  };
+
+export const likeCommentAction = (comment, post, auth) => async (dispatch) => {
+  const newComment = { ...comment, likes: [...comment.likes, auth.user] };
+  const index = post.comments.findIndex((cmt) => cmt._id === comment._id);
+  const newComments = [...post.comments];
+  newComments[index] = newComment;
+
+  const newPost = { ...post, comments: newComments };
+
+  dispatch({ type: actionTypes.UPDATE_POST, payload: newPost });
+
   try {
-    const res = await getCommentCount(id, token);
-    dispatch(getTotalComments(res.data));
+    await likeComment(comment._id, { id: auth.user._id }, auth.token);
   } catch (err) {
     console.log(err);
+    err.response?.data?.msg &&
+      dispatch(setMessage(err.response.data.msg, "error"));
   }
 };
 
-export const getCommentsAction = (id, page, token) => async (dispatch) => {
-  dispatch(getComments());
-  try {
-    const res = await getPostComments(id, page, token);
-    dispatch(getCommentsSuccess(res.data));
-  } catch (err) {
-    console.log(err);
-    dispatch(getCommentsFail());
-  }
-};
+export const unLikeCommentAction =
+  (comment, post, auth) => async (dispatch) => {
+    const newComment = {
+      ...comment,
+      likes: comment.likes.filter((cmt) => cmt._id !== auth.user._id),
+    };
+    const index = post.comments.findIndex((cmt) => cmt._id === comment._id);
+    const newComments = [...post.comments];
+    newComments[index] = newComment;
 
-export const createCommentAction = (data, token) => async (dispatch) => {
-  try {
-    const res = await createComment(data, token);
-    dispatch({
-      type: actionTypes.CREATE_COMMENTS,
-      payload: res.data,
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};
+    const newPost = { ...post, comments: newComments };
 
-export const deleteCommentAction = (id, token) => async (dispatch) => {
-  try {
-    await deleteComment(id, token);
-    dispatch({
-      type: actionTypes.DELETE_COMMENT,
-      payload: id,
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};
+    dispatch({ type: actionTypes.UPDATE_POST, payload: newPost });
+    try {
+      await unLikeComment(comment._id, { id: auth.user._id }, auth.token);
+    } catch (err) {
+      console.log(err);
+      err.response?.data?.msg &&
+        dispatch(setMessage(err.response.data.msg, "error"));
+    }
+  };
+
+export const removeCommentAction =
+  ({ post, comment }, auth, socket) =>
+  (dispatch) => {
+    const arrDelete = [
+      ...post.comments.filter((cmt) => cmt.reply === comment._id),
+      comment,
+    ];
+    const newPost = {
+      ...post,
+      comments: post.comments.filter(
+        (cm) => !arrDelete.find((da) => da._id === cm._id)
+      ),
+    };
+    //console.log(arrDelete);
+
+    dispatch({ type: actionTypes.UPDATE_POST, payload: newPost });
+
+    socket.emit("deleteComment", newPost);
+    try {
+      arrDelete.forEach((item) => {
+        deleteComment(item._id, auth.token);
+
+        // Notify
+        const msg = {
+          id: item._id,
+          text: comment.reply
+            ? "mentioned you in comment"
+            : "has commented on your post",
+          recipients: comment.reply ? [comment.tag._id] : [post.postedBy._id],
+          url: `/post/${post._id}`,
+        };
+
+        dispatch(removeNotifyAction({ msg, auth, socket }));
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };

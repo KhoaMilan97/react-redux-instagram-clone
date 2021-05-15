@@ -1,20 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
 
 import InputBase from "@material-ui/core/InputBase";
 import SearchIcon from "@material-ui/icons/Search";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { fade, makeStyles } from "@material-ui/core/styles";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import Avatar from "@material-ui/core/Avatar";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import ClearIcon from "@material-ui/icons/Clear";
 
 import { searchUser } from "../../functions/user";
+import UserCard from "../card/UserCard";
 
 const useStyles = makeStyles((theme) => ({
   search: {
@@ -134,26 +129,7 @@ function Search() {
 
   const renderListProfile = () => (
     <div className={classes.root} style={{ display: show ? "block" : "none" }}>
-      <List component="nav" aria-label="main mailbox folders">
-        {users.map((user) => (
-          <ListItem
-            component={Link}
-            to={`/${user.username}`}
-            onClick={handleClose}
-            key={user._id}
-            button
-          >
-            <ListItemIcon>
-              {user.avatar?.url ? (
-                <Avatar alt="profile picture" src={user.avatar?.url} />
-              ) : (
-                <Avatar alt="profile picture" />
-              )}
-            </ListItemIcon>
-            <ListItemText primary={user.username} secondary={user.fullname} />
-          </ListItem>
-        ))}
-      </List>
+      <UserCard users={users} handleClose={handleClose} link={true} />
     </div>
   );
 

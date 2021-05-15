@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import _ from "lodash";
 
 import Container from "@material-ui/core/Container";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
@@ -10,12 +9,15 @@ import Grid from "@material-ui/core/Grid";
 import Avatar from "@material-ui/core/Avatar";
 import Typography from "@material-ui/core/Typography";
 import { CircularProgress, Hidden } from "@material-ui/core";
+import Skeleton from "@material-ui/lab/Skeleton";
+import ReplayIcon from "@material-ui/icons/Replay";
+import IconButton from "@material-ui/core/IconButton";
 
 import HomeCard from "../components/card/HomeCard";
 import CreatePostForm from "../components/form/CreatePostForm";
-import { getFollowerPost } from "../functions/post";
 import { suggestUser } from "../functions/user";
 import SuggestUser from "../components/SuggestUser";
+import { getHomePostAction } from "../redux/actions/postAction";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -32,81 +34,62 @@ const useStyles = makeStyles((theme) => ({
     position: "sticky",
     top: `calc(${theme.mixins.toolbar.minHeight}px + 38px)`,
   },
+  icon: {
+    padding: 0,
+  },
 }));
 
 const Home = () => {
   const classes = useStyles();
   const theme = useTheme();
   const matchesSM = useMediaQuery(theme.breakpoints.down("sm"));
-  const [posts, setPosts] = useState([]);
+  const dispatch = useDispatch();
+
   const [suggestListUser, setSuggestListUser] = useState([]);
-  const [loadingPost, setLoadingPost] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
+  const [suggestLoading, setSuggestLoading] = useState(true);
+
   const [page, setPage] = useState(1);
 
-  const auth = useSelector((state) => state.auth);
+  const { auth, postReducer } = useSelector((state) => state);
   const { user, token } = auth;
   const observer = useRef();
-  const postsRef = useRef();
+  const skeletonList = [1, 2, 3, 4, 5];
 
   useEffect(() => {
-    postsRef.current = posts;
-  }, [posts]);
+    if (auth.token) {
+      dispatch(getHomePostAction(auth.user._id, auth.token, page));
+    }
+  }, [dispatch, auth.user._id, auth.token, page]);
 
-  const getPost = useCallback(
-    (isCancelled) => {
-      setLoadingPost(true);
-      getFollowerPost(user._id, page, token)
-        .then((res) => {
-          if (!isCancelled) {
-            let newArr = [...postsRef.current, ...res.data];
-            newArr = _.uniqBy(newArr, "_id");
-            setPosts(newArr);
-            setHasMore(res.data.length > 0);
-
-            setLoadingPost(false);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-
-          setLoadingPost(false);
-        });
-    },
-    [user._id, token, page]
-  );
-
-  useEffect(() => {
-    let isCancelled = false;
-    getPost(isCancelled);
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [getPost]);
-
-  useEffect(() => {
+  const getSuggestListItem = useCallback(() => {
+    setSuggestLoading(true);
     suggestUser(user._id, token)
       .then((res) => {
-        setSuggestListUser(res.data);
+        setSuggestListUser(res.data.users);
+        setSuggestLoading(false);
       })
       .catch((err) => {
         console.log(err);
+        setSuggestLoading(false);
       });
   }, [user._id, token]);
 
+  useEffect(() => {
+    getSuggestListItem();
+  }, [getSuggestListItem]);
+
   const lastPostElementRef = useCallback(
     (node) => {
-      if (loadingPost) return;
+      if (postReducer.loading) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
+        if (entries[0].isIntersecting && postReducer.hasMore) {
           setPage((prevPageNumber) => prevPageNumber + 1);
         }
       });
       if (node) observer.current.observe(node);
     },
-    [loadingPost, hasMore]
+    [postReducer.loading, postReducer.hasMore]
   );
 
   return (
@@ -121,12 +104,15 @@ const Home = () => {
           >
             <CreatePostForm />
 
-            {posts.length === 0 && !loadingPost && (
+            {postReducer.posts.result === 0 && !postReducer.loading && (
               <Typography variant="body1">No posts</Typography>
             )}
 
-            {posts.map((post, index) => {
-              if (posts.length > 5 && posts.length === index + 1) {
+            {postReducer.posts.map((post, index) => {
+              if (
+                postReducer.posts.length > 5 &&
+                postReducer.posts.length === index + 1
+              ) {
                 return (
                   <HomeCard
                     ref={lastPostElementRef}
@@ -137,7 +123,7 @@ const Home = () => {
               }
               return <HomeCard key={post._id} post={post} />;
             })}
-            {loadingPost && (
+            {postReducer.loading && (
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <CircularProgress size={25} />
               </div>
@@ -182,9 +168,6 @@ const Home = () => {
                       {user.fullname}
                     </Typography>
                   </Grid>
-                  {/* <Grid item container alignItems="center" md>
-                    <MuiLink className={classes.link}>Switch</MuiLink>
-                  </Grid> */}
                 </Grid>
                 <Grid
                   item
@@ -195,13 +178,36 @@ const Home = () => {
                     <Typography variant="body2" style={{ color: "#8e8e8e" }}>
                       Suggestions For You
                     </Typography>
-                    {/* <Typography variant="body2">See all</Typography> */}
+                    <IconButton
+                      onClick={getSuggestListItem}
+                      className={classes.icon}
+                    >
+                      <ReplayIcon fontSize="small" />
+                    </IconButton>
                   </Grid>
                 </Grid>
-                {suggestListUser.length > 0 &&
-                  suggestListUser.map((u) => (
-                    <SuggestUser key={u._id} user={u} />
-                  ))}
+                {suggestLoading
+                  ? skeletonList.map((item) => (
+                      <Grid
+                        key={item}
+                        style={{ marginBottom: "10px" }}
+                        item
+                        container
+                        alignItems="center"
+                      >
+                        <Skeleton variant="circle" width={40} height={40} />
+                        <Skeleton
+                          style={{ marginLeft: "10px" }}
+                          variant="rect"
+                          width="80%"
+                          height={20}
+                        />
+                      </Grid>
+                    ))
+                  : suggestListUser.length > 0 &&
+                    suggestListUser.map((u) => (
+                      <SuggestUser key={u._id} user={u} />
+                    ))}
               </Grid>
             </Grid>
           </Hidden>

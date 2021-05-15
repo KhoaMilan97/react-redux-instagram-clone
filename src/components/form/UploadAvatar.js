@@ -40,8 +40,8 @@ export default function UploadAvatar({ center, setImageLoading }) {
       setImageLoading(true);
       Resizer.imageFileResizer(
         files,
-        720,
-        720,
+        250,
+        250,
         "JPEG",
         100,
         0,

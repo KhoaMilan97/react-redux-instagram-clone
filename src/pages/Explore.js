@@ -160,32 +160,34 @@ function Explore() {
                   />
                 )}
               </div>
-              <div
-                onClick={() => handleClickPost(posts[1]._id)}
-                className={classes.gridTileTwoItemSmall}
-              >
-                <img src={posts[1].images[0]?.url} alt="gird list" />
-                {posts[1].images?.length > 1 && (
-                  <GridListTileBar
-                    className={classes.titleBar}
-                    actionIcon={<CollectionsIcon className={classes.icon} />}
-                    titlePosition="top"
-                    actionPosition="right"
-                  />
-                )}
-              </div>
+              {posts.length > 2 && (
+                <div
+                  onClick={() => handleClickPost(posts[2]?._id)}
+                  className={classes.gridTileTwoItemSmall}
+                >
+                  <img src={posts[2]?.images[0]?.url} alt="gird list" />
+                  {posts[2]?.images?.length > 2 && (
+                    <GridListTileBar
+                      className={classes.titleBar}
+                      actionIcon={<CollectionsIcon className={classes.icon} />}
+                      titlePosition="top"
+                      actionPosition="right"
+                    />
+                  )}
+                </div>
+              )}
             </GridListTile>
           )}
-          {posts.length > 0 && (
+          {posts.length > 1 && (
             <GridListTile
               component={Link}
-              to={`/post/${posts[2]._id}`}
+              to={`/post/${posts[1]?._id}`}
               className={classes.gridTile}
               cols={2}
               rows={2}
             >
-              <img src={posts[2].images[0]?.url} alt="gird list" />
-              {posts[2].images?.length > 1 && (
+              <img src={posts[1]?.images[0]?.url} alt="gird list" />
+              {posts[1]?.images?.length > 1 && (
                 <GridListTileBar
                   className={classes.titleBar}
                   actionIcon={<CollectionsIcon className={classes.icon} />}

@@ -14,3 +14,17 @@ export const getNotify = async (token) =>
   await axios.get(`/api/notifies`, {
     headers: { Authorization: token },
   });
+
+export const isReadNotify = async (id, token) =>
+  await axios.patch(
+    `/api/read-notify/${id}`,
+    {},
+    {
+      headers: { Authorization: token },
+    }
+  );
+
+export const deleteAllNotify = async (token) =>
+  await axios.delete(`/api/delete-all-notify`, {
+    headers: { Authorization: token },
+  });

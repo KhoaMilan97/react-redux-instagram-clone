@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import moment from "moment";
@@ -19,29 +19,26 @@ import {
   Input,
   useMediaQuery,
   Hidden,
-  IconButton,
   CircularProgress,
 } from "@material-ui/core";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
-import AddCircleOutlineIcon from "@material-ui/icons/AddCircleOutline";
 
-import SimpleSlider from "../components/card/SimpleSlider";
-import { getSinglePost, removePosts } from "../functions/post";
-import { setMessage } from "../redux/actions/messageAction";
-import {
-  getCommentsAction,
-  createCommentAction,
-  getTotalCommentsAction,
-  clearOldComments,
-} from "../redux/actions/commentAction";
 import ConfirmModal from "../components/modal/ConfirmModal";
 import CardAction from "../components/card/CardAction";
 import CommentPost from "../components/comments/CommentPost";
-import { useScroll } from "../utils/useScroll";
 import PostDetailSkeleton from "../components/loading/PostDetailSkeleton";
-import useFollow from "../utils/useFollow";
+import SimpleSlider from "../components/card/SimpleSlider";
 import FollowModal from "../components/modal/FollowModal";
-import { removeNotifyAction } from "../redux/actions/notifyAction";
+
+import useFollow from "../utils/useFollow";
+//import { useScroll } from "../utils/useScroll";
+
+import { deletePostAction, getPostAction } from "../redux/actions/postAction";
+import { actionTypes } from "../redux/actions/actionType";
+import { setMessage } from "../redux/actions/messageAction";
+import { createCommentAction } from "../redux/actions/commentAction";
+import PostModal from "../components/modal/PostModal";
+import EmojiIcon from "../components/EmojiIcon";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -84,9 +81,8 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     height: "100%",
-    //maxHeight: "592px",
     width: "100%",
-    overflow: "hidden",
+    // overflow: "visible",
     [theme.breakpoints.down("md")]: {
       width: "100%",
     },
@@ -112,20 +108,16 @@ function PostDetail() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [openFollowModal, setOpenFollowModal] = useState(false);
-  const [page, setPage] = useState(1);
   const [comment, setComment] = useState("");
-  const [cmtLoading, setCmtLoading] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
 
-  const [executeScroll, elRef] = useScroll();
   const history = useHistory();
   const dispatch = useDispatch();
-  const { auth, socket } = useSelector((state) => state);
-  const { comments, status, totalComments, limit } = useSelector(
-    (state) => state.comments
+  const { auth, socket, postDetail, postReducer } = useSelector(
+    (state) => state
   );
+
   const { followLoading, handleFollowAction, handleUnFollowAction } = useFollow(
-    post.postedBy?._id,
+    post?.postedBy?._id,
     auth.token
   );
   const classes = useStyles();
@@ -133,89 +125,53 @@ function PostDetail() {
   const commentRef = useRef();
   const theme = useTheme();
   const matchesMD = useMediaQuery(theme.breakpoints.down("md"));
-  const limitRef = useRef();
 
   const checkUserIsFollow = (id) => {
     return auth.user.following.some((item) => item._id === id);
   };
 
   useEffect(() => {
-    limitRef.current = limit;
-  }, [limit]);
-
-  useEffect(() => {
-    dispatch(clearOldComments());
-  }, [id, dispatch]);
-
-  const getComments = useCallback(() => {
-    dispatch(getCommentsAction(id, page, limitRef.current, auth.token));
-  }, [id, page, auth.token, dispatch]);
-
-  const getPost = useCallback(() => {
     setLoading(true);
-    getSinglePost(id, auth.token)
-      .then((response) => {
-        setPost(response.data.post);
-        setLikeCount(response.data.post.likes.length);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-      });
-  }, [id, auth.token]);
-
-  useEffect(() => {
-    getComments();
-  }, [getComments]);
-
-  useEffect(() => {
-    getPost();
-  }, [getPost]);
-
-  useEffect(() => {
-    dispatch(getTotalCommentsAction(id, auth.token));
-  }, [id, auth.token, dispatch]);
+    dispatch(getPostAction(postDetail, id, auth));
+    if (postDetail.length > 0) {
+      const newArr = postDetail.filter((post) => post._id === id);
+      setPost(newArr[0]);
+      setLoading(false);
+    }
+  }, [postDetail, dispatch, id, auth]);
 
   const handleRemovePost = async () => {
-    try {
-      const res = await removePosts(id, auth.token);
-      console.log(res);
-      dispatch(setMessage("Delete post success!", "success"));
-      history.push(`/${auth.user.username}`);
-      // Notify
-      const msg = {
-        id,
-        recipients: res.data.post.postedBy.followers,
-        url: `/post/${id}`,
-      };
-
-      await dispatch(removeNotifyAction({ msg, auth, socket }));
-    } catch (err) {
-      console.log(err);
-    }
+    await dispatch(deletePostAction(post, auth, socket));
+    dispatch(setMessage("Delete post success!", "success"));
+    return history.push("/");
   };
 
-  const handleCreateComment = async () => {
-    setCmtLoading(true);
-    await dispatch(
-      createCommentAction(
-        { user: auth.user._id, content: comment, post_id: post._id },
-        auth.token
-      )
-    );
+  const handleCreateComment = () => {
+    if (!comment.trim()) return;
+    const newComment = {
+      user: auth.user,
+      content: comment,
+      post_id: post._id,
+      likes: [],
+      userPostId: post.postedBy._id,
+    };
+
+    dispatch(createCommentAction(post, newComment, auth, socket));
+
     setComment("");
-    setCmtLoading(false);
-    executeScroll();
   };
 
   const handleFocus = (event) => {
     commentRef.current.focus();
   };
 
-  const handleLoadMoreComment = () => {
-    setPage((prevPage) => prevPage + 1);
-  };
+  if (loading) {
+    return <PostDetailSkeleton />;
+  }
+
+  if (post?.length <= 0 || !post) {
+    return <PostDetailSkeleton />;
+  }
 
   const titleCard = (
     <Grid className={classes.rightBox} item container alignItems="center">
@@ -237,8 +193,12 @@ function PostDetail() {
         <div style={{ flex: "1", textAlign: "right" }}>
           <Button
             color="primary"
-            component={Link}
-            to={`/post/edit/${post._id}`}
+            onClick={() => {
+              dispatch({
+                type: actionTypes.POST_MODAL,
+                payload: { ...post, onEdit: true },
+              });
+            }}
           >
             Edit
           </Button>
@@ -266,12 +226,9 @@ function PostDetail() {
     </Grid>
   );
 
-  if (loading) {
-    return <PostDetailSkeleton />;
-  }
-
   return (
     <Container maxWidth="md">
+      <PostModal open={postReducer.open} />
       <Grid
         container
         component={Paper}
@@ -341,26 +298,15 @@ function PostDetail() {
                 subheader={moment(post.createdAt).fromNow(true)}
               />
               <CardContent className={classes.cardContent}>
-                <CommentPost comments={comments} status={status} ref={elRef} />
-                {totalComments > comments.length && status === "succeeded" && (
-                  <IconButton
-                    onClick={handleLoadMoreComment}
-                    style={{ display: "block", margin: "0 auto" }}
-                  >
-                    <AddCircleOutlineIcon />
-                  </IconButton>
+                {post.comments?.length > 0 && (
+                  <CommentPost post={post} comments={post.comments} />
                 )}
               </CardContent>
-              <CardAction
-                post={post}
-                setPost={setPost}
-                auth={auth}
-                handleFocus={handleFocus}
-                setLikeCount={setLikeCount}
-              />
+              <CardAction post={post} auth={auth} handleFocus={handleFocus} />
               <div style={{ padding: "5px 14px" }}>
                 <Typography>
-                  {likeCount} {likeCount > 1 ? "likes" : "like"}
+                  {post.likes?.length}{" "}
+                  {post.likes?.length > 1 ? "likes" : "like"}
                 </Typography>
                 <Typography className={classes.time}>
                   {moment(post.createdAt).fromNow(true)}
@@ -374,9 +320,12 @@ function PostDetail() {
                   disableUnderline
                   className={classes.input}
                   placeholder="Add a comment..."
-                  ref={commentRef}
+                  inputRef={commentRef}
                   onChange={(e) => setComment(e.target.value)}
                   value={comment}
+                  startAdornment={
+                    <EmojiIcon title={comment} setTitle={setComment} />
+                  }
                   endAdornment={
                     <InputAdornment position="end">
                       <Button
@@ -386,11 +335,7 @@ function PostDetail() {
                         style={{ paddingRight: 0 }}
                         disabled={comment.length < 1}
                       >
-                        {cmtLoading ? (
-                          <CircularProgress color="primary" size={20} />
-                        ) : (
-                          "Post"
-                        )}
+                        Post
                       </Button>
                     </InputAdornment>
                   }

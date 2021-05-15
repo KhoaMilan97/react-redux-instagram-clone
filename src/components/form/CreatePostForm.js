@@ -1,11 +1,12 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 import { Avatar, Grid, Paper, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
 import PostModal from "../modal/PostModal";
+import { actionTypes } from "../../redux/actions/actionType";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -27,13 +28,15 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function CreatePostForm() {
-  const [open, setOpen] = React.useState(false);
-
-  const auth = useSelector((state) => state.auth);
+  const { auth, postReducer } = useSelector((state) => state);
   const classes = useStyles();
+  const dispatch = useDispatch();
 
   const handleClickOpen = () => {
-    setOpen(true);
+    dispatch({
+      type: actionTypes.POST_MODAL,
+      payload: true,
+    });
   };
 
   return (
@@ -57,7 +60,7 @@ function CreatePostForm() {
           </Button>
         </Grid>
       </Grid>
-      <PostModal open={open} setOpen={setOpen} />
+      <PostModal open={postReducer.open} />
     </Paper>
   );
 }

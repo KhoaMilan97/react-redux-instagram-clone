@@ -2,7 +2,6 @@ import { Route, Switch, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
-
 import Hidden from "@material-ui/core/Hidden";
 
 import Footer from "./components/Footer";
@@ -12,27 +11,30 @@ import InstaLoading from "./components/loading/InstaLoading";
 import NotFound from "./pages/NotFound";
 import Accounts from "./pages/Accounts";
 import Home from "./pages/Home";
-import Messages from "./pages/Messages";
+import Messages from "./pages/message/Messages";
 import Explore from "./pages/Explore";
-
 import PostDetail from "./pages/PostDetail";
 import Profile from "./pages/profile/Profile";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
+import EditPost from "./pages/post/EditPost";
+import Inbox from "./pages/message/Inbox";
 
 import PrivateRoute from "./utils/privateRoute";
 import UserRoute from "./utils/userRoute";
-import { getAccessToken } from "./functions/auth";
-import { checkCurrentUser } from "./redux/actions/authAction";
-import { setMessage } from "./redux/actions/messageAction";
-import EditPost from "./pages/post/EditPost";
 import Message from "./utils/Message";
 import ToolBarMargin from "./utils/ToolBarMargin";
-import { actionTypes } from "./redux/actions/actionType";
+
+import { getAccessToken } from "./functions/auth";
 import SocketClient from "./SocketClient";
+
+import { actionTypes } from "./redux/actions/actionType";
+import { checkCurrentUser } from "./redux/actions/authAction";
+import { setMessage } from "./redux/actions/messageAction";
 import { getNotifyAction } from "./redux/actions/notifyAction";
+import ScrollToTop from "./utils/ScrollToTop";
 
 function App() {
   const { pathname } = useLocation();
@@ -72,8 +74,8 @@ function App() {
           setPending(false);
         } catch (err) {
           console.log(err);
-          err.response.data.msg &&
-            dispatch(setMessage(err.response.data.msg, "error"));
+          err.response?.data?.msg &&
+            dispatch(setMessage(err.response?.data?.msg, "error"));
           setPending(false);
         }
       };
@@ -83,6 +85,30 @@ function App() {
     }
   }, [auth.isLoggedIn, dispatch]);
 
+  useEffect(() => {
+    // Let's check if the browser supports notifications
+    if (!("Notification" in window)) {
+      alert("This browser does not support desktop notification");
+    }
+
+    // Let's check whether notification permissions have already been granted
+    else if (Notification.permission === "granted") {
+      // If it's okay let's create a notification
+    }
+
+    // Otherwise, we need to ask the user for permission
+    else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(function (permission) {
+        // If the user accepts, let's create a notification
+        if (permission === "granted") {
+        }
+      });
+    }
+
+    // At last, if the user has denied notifications, and you
+    // want to be respectful there is no need to bother them any more.
+  }, []);
+
   if (pending) return <InstaLoading />;
 
   return (
@@ -90,6 +116,7 @@ function App() {
       {!hide && <Header />}
       <Message />
       {auth.token && <SocketClient />}
+      <ScrollToTop />
       <Switch>
         <UserRoute sensitive exact path="/signup" component={SignUp} />
         <UserRoute sensitive exact path="/signin" component={SignIn} />
@@ -106,11 +133,12 @@ function App() {
           component={ResetPassword}
         />
         <PrivateRoute path="/accounts" component={Accounts} />
-        <PrivateRoute path="/messages" component={Messages} />
-        <PrivateRoute path="/explore" component={Explore} />
+        <PrivateRoute exact path="/messages" component={Messages} />
+        <PrivateRoute exact path="/messages/:id" component={Inbox} />
+        <PrivateRoute exact path="/explore" component={Explore} />
 
-        <PrivateRoute path="/post/edit/:id" component={EditPost} />
-        <PrivateRoute path="/post/:id" component={PostDetail} />
+        <PrivateRoute exact path="/post/edit/:id" component={EditPost} />
+        <PrivateRoute exact path="/post/:id" component={PostDetail} />
         <PrivateRoute path="/:username" component={Profile} />
         <PrivateRoute sensitive exact path="/" component={Home} />
 
@@ -126,4 +154,4 @@ function App() {
 
 export default App;
 
-// #29 17'21s
+// #21 22min edit lieks

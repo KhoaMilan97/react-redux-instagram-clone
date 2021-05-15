@@ -1,13 +1,18 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { followUser, unfollowUser } from "../functions/user";
 import { actionTypes } from "../redux/actions/actionType";
+import {
+  createNotifyAction,
+  removeNotifyAction,
+} from "../redux/actions/notifyAction";
 
 function useFollow(userId, token) {
   const [followLoading, setFollowLoading] = useState(false);
   const [userAfterFollow, setUserAfterFollow] = useState("");
   const dispatch = useDispatch();
+  const { auth, socket } = useSelector((state) => state);
 
   const handleFollowAction = () => {
     setFollowLoading(true);
@@ -19,6 +24,16 @@ function useFollow(userId, token) {
           payload: res.data.userFollowing,
         });
         setFollowLoading(false);
+
+        //Notify
+        const msg = {
+          id: auth.user._id,
+          text: "has started follow you.",
+          recipients: [res.data.userFollower._id],
+          url: `/${auth.user.username}`,
+        };
+
+        dispatch(createNotifyAction({ msg, auth, socket }));
       })
       .catch((err) => {
         console.log(err);
@@ -36,6 +51,16 @@ function useFollow(userId, token) {
           payload: res.data.userFollowing,
         });
         setFollowLoading(false);
+
+        //Notify
+        const msg = {
+          id: auth.user._id,
+          text: "has started follow you.",
+          recipients: [res.data.userFollower._id],
+          url: `/${auth.user.username}`,
+        };
+
+        dispatch(removeNotifyAction({ msg, auth, socket }));
       })
       .catch((err) => {
         console.log(err);

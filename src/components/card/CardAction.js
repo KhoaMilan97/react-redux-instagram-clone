@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import CardActions from "@material-ui/core/CardActions";
 import IconButton from "@material-ui/core/IconButton";
@@ -14,9 +14,14 @@ import TelegramIcon from "@material-ui/icons/Telegram";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import BookmarkIcon from "@material-ui/icons/Bookmark";
 
-import { likePost, unLikePost } from "../../functions/post";
 import { savedPost, unsavedPost } from "../../functions/user";
 import { actionTypes } from "../../redux/actions/actionType";
+import {
+  likePostAction,
+  UnLikePostAction,
+} from "../../redux/actions/postAction";
+import ShareModal from "../modal/ShareModal";
+import { BASE_URL } from "../../utils/config";
 
 const useStyles = makeStyles((theme) => ({
   expand: {
@@ -38,18 +43,19 @@ const useStyles = makeStyles((theme) => ({
 
 function CardAction(props, ref) {
   const classes = useStyles();
-  const { post, setPost, auth, handleFocus, setLikeCount } = props;
+  const { post, auth, handleFocus } = props;
   const [loading, setLoading] = useState(false);
   const history = useHistory();
   const location = useLocation();
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isShare, setIsShare] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const dispatch = useDispatch();
+  const socket = useSelector((state) => state.socket);
 
   useEffect(() => {
-    const userIsLiked = post.likes.some((like) => like === auth.user._id);
-    if (userIsLiked) setIsLiked(true);
+    if (post.likes.find((like) => like._id === auth.user._id)) setIsLiked(true);
   }, [auth.user._id, post.likes]);
 
   useEffect(() => {
@@ -61,34 +67,16 @@ function CardAction(props, ref) {
     if (loading) return;
     setLoading(true);
     setIsLiked(true);
-    setLikeCount((previousCount) => previousCount + 1);
-    try {
-      const res = await likePost({ id: auth.user._id }, post._id, auth.token);
-      const newData = post._id === res.data._id ? res.data : post;
-      setPost(newData);
-      setLoading(false);
-    } catch (err) {
-      console.log(err);
-      setLoading(false);
-    }
+    await dispatch(likePostAction(post, auth, socket));
+    setLoading(false);
   };
 
-  const handleUnLike = () => {
+  const handleUnLike = async () => {
     if (loading) return;
     setLoading(true);
     setIsLiked(false);
-    setLikeCount((previousCount) => previousCount - 1);
-
-    unLikePost({ id: auth.user._id }, post._id, auth.token)
-      .then((res) => {
-        const newData = post._id === res.data._id ? res.data : post;
-        setPost(newData);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-      });
+    await dispatch(UnLikePostAction(post, auth, socket));
+    setLoading(false);
   };
 
   const handleSaved = () => {
@@ -113,7 +101,7 @@ function CardAction(props, ref) {
 
   const handleUnSaved = () => {
     if (saveLoading) return;
-    setIsSaved(true);
+    setIsSaved(false);
     setSaveLoading(true);
     unsavedPost(post._id, auth.user._id, auth.token)
       .then((res) => {
@@ -174,7 +162,11 @@ function CardAction(props, ref) {
           </IconButton>
         </Tooltip>
         <Tooltip title="Share" arrow>
-          <IconButton className={classes.icon} aria-label="share">
+          <IconButton
+            onClick={() => setIsShare(true)}
+            className={classes.icon}
+            aria-label="share"
+          >
             <TelegramIcon />
           </IconButton>
         </Tooltip>
@@ -200,6 +192,12 @@ function CardAction(props, ref) {
           </Tooltip>
         )}
       </CardActions>
+      <ShareModal
+        open={isShare}
+        setOpen={setIsShare}
+        url={`${BASE_URL}/post/${post._id}`}
+        // url="https://www.instagram.com/"
+      />
     </>
   );
 }

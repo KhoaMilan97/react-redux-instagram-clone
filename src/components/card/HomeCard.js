@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback, forwardRef } from "react";
+import React, { useState, forwardRef } from "react";
 import moment from "moment";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
@@ -21,15 +21,19 @@ import { Button } from "@material-ui/core";
 
 import SimpleSlider from "./SimpleSlider";
 import CardAction from "./CardAction";
-import CommentHomeCard from "../comments/CommentHomeCard";
-import { createComment, getComment } from "../../functions/comment";
+
 import CardModal from "../modal/CardModal";
+import { createCommentAction } from "../../redux/actions/commentAction";
+import CommentPost from "../comments/CommentPost";
+// import Icon from "../Icon";
+import EmojiIcon from "../EmojiIcon";
 
 const useStyles = makeStyles((theme) => ({
   root: {
     width: "100%",
     marginBottom: "50px",
     minHeight: "450px",
+    // overflow: "visible",
   },
   cardContent: {
     paddingBottom: "14px",
@@ -66,6 +70,7 @@ const useStyles = makeStyles((theme) => ({
     fontSize: "14px",
   },
   more: {
+    color: "#8e8e8e",
     "&:hover": {
       cursor: "pointer",
     },
@@ -73,55 +78,30 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const HomeCard = forwardRef((props, ref) => {
-  const { post } = props;
-  const [postCard, setPostCard] = useState(post);
   const [comment, setComment] = useState("");
-  const [comments, setComments] = useState([]);
   const [showMore, setShowMore] = useState(false);
+  const { post } = props;
 
-  const [likeCount, setLikeCount] = useState(post.likes.length);
   const [open, setOpen] = useState(false);
 
-  const auth = useSelector((state) => state.auth);
-
-  // let imgHeight =
-  //   (postCard.images[0]?.width / postCard.images[0]?.height) * 100;
+  const { auth, socket } = useSelector((state) => state);
+  const dispatch = useDispatch();
 
   const classes = useStyles();
 
-  const getPostComment = useCallback(() => {
-    getComment(post._id, auth.token)
-      .then((res) => {
-        if (res.data) {
-          setComments(res.data);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [post._id, auth.token]);
-
-  useEffect(() => {
-    getPostComment();
-  }, [getPostComment]);
-
   const handleCreateComment = () => {
-    createComment(
-      {
-        user: auth.user._id,
-        content: comment,
-        post_id: post._id,
-      },
-      auth.token
-    )
-      .then((res) => {
-        getPostComment();
+    if (!comment.trim()) return;
+    const newComment = {
+      user: auth.user,
+      content: comment,
+      post_id: props.post._id,
+      likes: [],
+      userPostId: post.postedBy._id,
+    };
 
-        setComment("");
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    dispatch(createCommentAction(props.post, newComment, auth, socket));
+
+    setComment("");
   };
 
   return (
@@ -131,9 +111,9 @@ const HomeCard = forwardRef((props, ref) => {
           <Avatar
             aria-label="recipe"
             className={classes.avatar}
-            src={postCard.postedBy?.avatar.url}
+            src={props.post.postedBy?.avatar.url}
             component={Link}
-            to={`/${postCard.postedBy?.username}`}
+            to={`/${props.post.postedBy?.username}`}
           />
         }
         action={
@@ -142,26 +122,18 @@ const HomeCard = forwardRef((props, ref) => {
           </IconButton>
         }
         title={
-          <Link
-            style={{ color: "inherit" }}
-            to={`/${postCard.postedBy?.username}`}
-          >
-            {postCard.postedBy?.username}
+          <Link style={{ color: "inherit" }} to={`/${post.postedBy?.username}`}>
+            {post.postedBy?.username}
           </Link>
         }
       />
-      {postCard.images.length > 0 && <SimpleSlider images={postCard.images} />}
+      {post.images.length > 0 && <SimpleSlider images={post.images} />}
 
-      <CardAction
-        post={postCard}
-        setPost={setPostCard}
-        auth={auth}
-        setLikeCount={setLikeCount}
-      />
+      <CardAction post={post} auth={auth} />
 
       <CardContent className={classes.cardContent} style={{ paddingTop: 0 }}>
         <Typography>
-          {likeCount} {likeCount > 1 ? "likes" : "like"}
+          {post.likes.length} {post.likes.length > 1 ? "likes" : "like"}
         </Typography>
         <Typography
           variant="body2"
@@ -170,29 +142,25 @@ const HomeCard = forwardRef((props, ref) => {
           component="p"
         >
           <span style={{ color: "#262626", fontWeight: 600 }}>
-            {postCard.postedBy?.username}
+            {post.postedBy?.username}
           </span>{" "}
-          {showMore ? postCard.title : `${postCard.title.substr(0, 50)}...`}
-          {!showMore && postCard.title.length > 50 && (
+          {showMore
+            ? post.title
+            : post.title.length > 60
+            ? `${post.title.substr(0, 60)}...`
+            : post.title}{" "}
+          {!showMore && post.title.length > 60 && (
             <span className={classes.more} onClick={() => setShowMore(true)}>
-              {" "}
               More
             </span>
           )}
         </Typography>
-        {comments.length > 2 && (
-          <Typography
-            className={classes.link}
-            component={Link}
-            to={`/post/${postCard._id}`}
-          >
-            View all {comments.length} comments
-          </Typography>
-        )}
 
-        {comments.length > 0 && <CommentHomeCard comments={comments} />}
+        {post.comments.length > 0 && (
+          <CommentPost post={post} comments={post.comments} />
+        )}
         <Typography className={classes.time}>
-          {moment(postCard.createdAt).fromNow()}
+          {moment(post.createdAt).fromNow()}
         </Typography>
       </CardContent>
       <Divider variant="fullWidth" />
@@ -205,6 +173,7 @@ const HomeCard = forwardRef((props, ref) => {
           placeholder="Add a comment..."
           onChange={(e) => setComment(e.target.value)}
           value={comment}
+          startAdornment={<EmojiIcon title={comment} setTitle={setComment} />}
           endAdornment={
             <InputAdornment position="end">
               <Button
@@ -220,11 +189,12 @@ const HomeCard = forwardRef((props, ref) => {
           }
         />
       </FormControl>
+
       <CardModal
         open={open}
         setOpen={setOpen}
-        user={postCard.postedBy}
-        post={postCard}
+        user={post.postedBy}
+        post={post}
       />
     </Card>
   );

@@ -11,6 +11,9 @@ import Divider from "@material-ui/core/Divider";
 import { ListItemText } from "@material-ui/core";
 
 import { setMessage } from "../../redux/actions/messageAction";
+import { actionTypes } from "../../redux/actions/actionType";
+import { deletePostAction } from "../../redux/actions/postAction";
+import ConfirmModal from "./ConfirmModal";
 
 const useStyles = makeStyles({
   red: {
@@ -30,7 +33,7 @@ function SimpleDialog(props) {
   const [copied, setCopied] = useState(false);
 
   const classes = useStyles();
-  const { onClose, open, user, post } = props;
+  const { onClose, open, user, post, setOpenConfirm } = props;
   const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
@@ -69,12 +72,26 @@ function SimpleDialog(props) {
         {auth.user._id === user._id && (
           <>
             <ListItem
-              component={Link}
               className={classes.link}
-              to={`/post/edit/${post._id}`}
-              onClick={() => handleClose()}
+              onClick={() => {
+                handleClose();
+                dispatch({
+                  type: actionTypes.POST_MODAL,
+                  payload: { ...post, onEdit: true },
+                });
+              }}
             >
               <ListItemText align="center">Edit post</ListItemText>
+            </ListItem>
+            <Divider />
+            <ListItem
+              className={classes.link}
+              onClick={() => {
+                handleClose();
+                setOpenConfirm(true);
+              }}
+            >
+              <ListItemText align="center">Remove post</ListItemText>
             </ListItem>
             <Divider />
           </>
@@ -102,13 +119,32 @@ function SimpleDialog(props) {
 }
 
 export default function CardModal({ open, setOpen, user, post }) {
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const { auth, socket } = useSelector((state) => state);
+  const dispatch = useDispatch();
+
   const handleClose = (value) => {
     setOpen(false);
   };
 
+  const handleRemovePost = () => {
+    dispatch(deletePostAction(post, auth, socket));
+  };
+
   return (
     <div>
-      <SimpleDialog user={user} open={open} post={post} onClose={handleClose} />
+      <SimpleDialog
+        user={user}
+        open={open}
+        post={post}
+        onClose={handleClose}
+        setOpenConfirm={setOpenConfirm}
+      />
+      <ConfirmModal
+        open={openConfirm}
+        setOpen={setOpenConfirm}
+        handleRemovePost={handleRemovePost}
+      />
     </div>
   );
 }

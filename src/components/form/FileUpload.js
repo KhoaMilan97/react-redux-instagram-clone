@@ -1,12 +1,10 @@
 import React from "react";
-import Resizer from "react-image-file-resizer";
-import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import { makeStyles } from "@material-ui/core/styles";
-
 import InsertPhotoIcon from "@material-ui/icons/InsertPhoto";
 
-import { uploadImages } from "../../functions/upload";
+import { setMessage } from "../../redux/actions/messageAction";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,40 +18,27 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function FileUpload({ setLoading, setImages, images }) {
+export default function FileUpload({ setImages, images }) {
   const classes = useStyles();
-  const { token } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
 
   const fileUploadAndResize = (e) => {
-    const files = e.target.files;
-    //const allUploadFiles = [];
-
-    if (files) {
-      setLoading(true);
-      for (let i = 0; i < files.length; i++) {
-        Resizer.imageFileResizer(
-          files[i],
-          1080,
-          1080,
-          "JPEG",
-          100,
-          0,
-          (uri) => {
-            uploadImages({ image: uri }, token)
-              .then((res) => {
-                //allUploadFiles.push(res.data);
-                setImages((prevArray) => [...prevArray, res.data]);
-                setLoading(false);
-              })
-              .catch((err) => {
-                console.log(err);
-                setLoading(false);
-              });
-          },
-          "base64"
-        );
+    const files = [...e.target.files];
+    console.log("what");
+    let err = "";
+    let newImages = [];
+    console.log(files);
+    files.forEach((file) => {
+      if (!file) return (err = "File doesn't exist");
+      if (file.size > 1024 * 1024 * 5) {
+        return (err = "The Image largest is 5mb.");
       }
-    }
+
+      return newImages.push(file);
+    });
+
+    if (err) dispatch(setMessage(err, "error"));
+    setImages([...images, ...newImages]);
   };
 
   return (

@@ -67,3 +67,10 @@ export const suggestUser = async (userId, token) =>
       Authorization: token,
     },
   });
+
+export const getSavedPosts = async (username, token) =>
+  await axios.get(`/api/get-saved-post/${username}`, {
+    headers: {
+      Authorization: token,
+    },
+  });
