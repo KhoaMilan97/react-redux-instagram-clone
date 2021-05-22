@@ -52,10 +52,10 @@ function Icon({ title, setTitle }) {
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
+        // anchorOrigin={{
+        //   vertical: "bottom",
+        //   horizontal: "left",
+        // }}
         transformOrigin={{
           vertical: "top",
           horizontal: "left",

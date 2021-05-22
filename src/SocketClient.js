@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { actionTypes } from "./redux/actions/actionType";
+import { chatTypes } from "./redux/actions/chatAction";
 
 import audioBell from "./audio/unconvinced-569.mp3";
 
@@ -21,7 +22,7 @@ const spawnNotification = (body, icon, url, title) => {
 };
 
 function SocketClient() {
-  const { auth, socket, notify } = useSelector((state) => state);
+  const { auth, socket, notify, online } = useSelector((state) => state);
   const dispatch = useDispatch();
   const audioRef = useRef();
 
@@ -40,8 +41,8 @@ function SocketClient() {
 
   // Join User
   useEffect(() => {
-    socket.emit("joinUser", auth?.user?._id);
-  }, [socket, auth.user._id]);
+    socket.emit("joinUser", auth.user);
+  }, [socket, auth.user]);
 
   // Likes
   useEffect(() => {
@@ -108,7 +109,63 @@ function SocketClient() {
       dispatch({ type: actionTypes.REMOVE_NOTIFY, payload: msg });
     });
     return () => socket.off("removeNotifyToClient");
-  });
+  }, [dispatch, socket]);
+
+  // Message/Chat
+  useEffect(() => {
+    socket.on("addMessageToClient", (msg) => {
+      dispatch({ type: chatTypes.ADD_CHAT, payload: msg });
+
+      dispatch({
+        type: chatTypes.ADD_USER,
+        payload: { ...msg.user, text: msg.text, media: msg.media },
+      });
+    });
+    return () => socket.off("addMessageToClient");
+  }, [dispatch, socket]);
+
+  // check User Online
+  useEffect(() => {
+    socket.emit("checkUserOnline", auth.user);
+  }, [socket, auth.user]);
+
+  useEffect(() => {
+    socket.on("checkUserOnlineToMe", (data) => {
+      data.forEach((item) => {
+        if (!online.includes(item.id)) {
+          dispatch({
+            type: chatTypes.ONLINE,
+            payload: item.id,
+          });
+        }
+      });
+    });
+    return () => socket.off("checkUserOnlineToMe");
+  }, [dispatch, socket, online]);
+
+  useEffect(() => {
+    socket.on("checkUserOnlineToClient", (id) => {
+      if (!online.includes(id)) {
+        dispatch({
+          type: chatTypes.ONLINE,
+          payload: id,
+        });
+      }
+    });
+    return () => socket.off("checkUserOnlineToClient");
+  }, [dispatch, socket, online]);
+
+  // Check user offline
+
+  useEffect(() => {
+    socket.on("checkUserOffline", (id) => {
+      dispatch({
+        type: chatTypes.OFFLINE,
+        payload: id,
+      });
+    });
+    return () => socket.off("checkUserOffline");
+  }, [dispatch, socket, online]);
 
   return (
     <audio controls={true} ref={audioRef} style={{ display: "none" }}>

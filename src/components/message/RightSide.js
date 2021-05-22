@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -8,7 +8,7 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Avatar from "@material-ui/core/Avatar";
 import { makeStyles } from "@material-ui/core/styles";
-import { Divider } from "@material-ui/core";
+import { Divider, Tooltip } from "@material-ui/core";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import IconButton from "@material-ui/core/IconButton";
 import Grid from "@material-ui/core/Grid";
@@ -21,15 +21,20 @@ import GridListTile from "@material-ui/core/GridListTile";
 import GridListTileBar from "@material-ui/core/GridListTileBar";
 import CancelIcon from "@material-ui/icons/Cancel";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import CallIcon from "@material-ui/icons/Call";
+import VideoCallIcon from "@material-ui/icons/VideoCall";
 
 import FileUpload from "../form/FileUpload";
 import { imageUpload } from "../../utils/uploadImage";
 import {
   addChatAction,
   getMessageAction,
+  loadMoreMessageAction,
+  deleteConversationAction,
 } from "../../redux/actions/chatAction";
 import MessageDisplay from "./MessageDisplay";
 import EmojiIcon from "../EmojiIcon";
+import ConfirmModal from "../modal/ConfirmModal";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -79,47 +84,69 @@ function RightSide() {
   const [images, setImages] = useState([]);
   const [text, setText] = useState("");
   const [loadMedia, setLoadMedia] = useState(false);
-  const messageRef = useRef();
+  const [page, setPage] = useState(0);
+  const [data, setData] = useState([]);
+  const [result, setResult] = useState(9);
+  const [hasMore, setHasMore] = useState(0);
+  const [open, setOpen] = useState(false);
 
   const { id } = useParams();
   const classes = useStyles();
+  const pageEnd = useRef();
+  const messageRef = useRef();
+  const history = useHistory();
+
+  useEffect(() => {
+    const newData = chat.data.find((item) => item._id === id);
+
+    if (newData) {
+      setData(newData.messages);
+      setResult(newData.result);
+      setPage(newData.page);
+    }
+  }, [chat.data, id]);
 
   const scrollToBottom = () => {
     messageRef.current?.scrollIntoView({
       behavior: "smooth",
-      inline: "nearest",
+      // inline: "nearest",
       block: "end",
     });
   };
 
   useEffect(() => {
-    const newUser = chat.users.find((user) => user._id === id);
-    if (newUser) {
-      setUser(newUser);
+    if (id && chat.users.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 50);
+      const newUser = chat.users.find((user) => user._id === id);
+      if (newUser) {
+        setUser(newUser);
+      }
     }
   }, [chat.users, id]);
 
   useEffect(() => {
     if (id) {
       const getMessage = async () => {
-        await dispatch(getMessageAction(id, auth));
+        if (chat.data.every((item) => item._id !== id)) {
+          console.log("get data");
+          await dispatch(getMessageAction(id, auth));
+          setTimeout(() => {
+            scrollToBottom();
+          }, 50);
+        }
       };
 
       getMessage();
     }
-  }, [id]);
+  }, [id, auth, dispatch, chat.data]);
 
   const handleRemoveImage = (index) => {
     const newArr = [...images];
     newArr.splice(index, 1);
     setImages(newArr);
   };
-
-  useEffect(() => {
-    if (chat.data.length > 0) {
-      scrollToBottom();
-    }
-  }, [chat.data]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -136,15 +163,58 @@ function RightSide() {
       createdAt: new Date().toISOString(),
     };
     setLoadMedia(false);
-    dispatch(addChatAction(msg, auth, socket));
-
-    scrollToBottom();
     setText("");
     setImages([]);
+
+    await dispatch(addChatAction(msg, auth, socket));
+
+    scrollToBottom();
   };
+
+  // Load More chat
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setHasMore((p) => p + 1);
+        }
+      },
+      {
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(pageEnd.current);
+  }, [setHasMore]);
+
+  useEffect(() => {
+    if (hasMore > 1) {
+      if (result >= page * 9) {
+        dispatch(loadMoreMessageAction(id, auth, page + 1));
+        setHasMore(1);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMore]);
+
+  const handleDeleteConversation = () => {
+    dispatch(deleteConversationAction(auth, id));
+    return history.push("/messages");
+  };
+
+  const handleAudioCall = () => {};
+
+  const handleVideoCall = () => {};
 
   return (
     <Grid container direction="column" style={{ height: "100%" }}>
+      <ConfirmModal
+        open={open}
+        setOpen={setOpen}
+        handleRemovePost={handleDeleteConversation}
+        title="Delete Conversation."
+        subtitle="Do you want delete this Conversation?"
+      />
       <List
         style={{ padding: 0 }}
         component="nav"
@@ -167,9 +237,25 @@ function RightSide() {
             primary={user.username}
             secondary={user.fullname}
           />
-          <IconButton style={{ padding: 10 }}>
-            <DeleteForeverIcon />
-          </IconButton>
+
+          <Tooltip title="Audio Call">
+            <IconButton onClick={handleAudioCall} style={{ padding: 10 }}>
+              <CallIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Video Call">
+            <IconButton
+              onClick={handleVideoCall}
+              style={{ pading: "10px 0px" }}
+            >
+              <VideoCallIcon color="primary" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete Conservation">
+            <IconButton onClick={() => setOpen(true)} style={{ padding: 10 }}>
+              <DeleteForeverIcon color="error" />
+            </IconButton>
+          </Tooltip>
         </ListItem>
       </List>
       <Divider />
@@ -181,12 +267,18 @@ function RightSide() {
         className={classes.messageContent}
       >
         <div className={classes.content}>
-          {/* <div className={classes.message}> */}
-          {chat.data.map((msg, index) => (
+          {chat.loading && (
+            <IconButton style={{ width: "100%" }} size="small">
+              <CircularProgress size={24} />
+            </IconButton>
+          )}
+          <div ref={pageEnd} style={{ visibility: "hidden" }}></div>
+
+          {data.map((msg, index) => (
             <React.Fragment key={index}>
               {msg.sender !== auth.user._id && (
                 <div style={{ width: "auto", maxWidth: "300px" }}>
-                  <MessageDisplay user={user} msg={msg} />
+                  <MessageDisplay user={user} msg={msg} data={data} />
                 </div>
               )}
               {msg.sender === auth.user._id && (
@@ -197,12 +289,17 @@ function RightSide() {
                     marginLeft: "auto",
                   }}
                 >
-                  <MessageDisplay user={user} msg={msg} yourMessage={true} />
+                  <MessageDisplay
+                    user={auth.user}
+                    msg={msg}
+                    yourMessage={true}
+                    data={data}
+                  />
                 </div>
               )}
             </React.Fragment>
           ))}
-          {/* </div> */}
+
           <div style={{ width: 0, height: 0 }} ref={messageRef}></div>
         </div>
       </Grid>
@@ -251,9 +348,9 @@ function RightSide() {
             autoFocus
             value={text}
             onChange={(e) => setText(e.target.value)}
-            onClick={(event) => {
-              event.target.value = null;
-            }}
+            // onClick={(event) => {
+            //   event.target.value = null;
+            // }}
             startAdornment={<EmojiIcon title={text} setTitle={setText} />}
             endAdornment={
               <InputAdornment position="end">

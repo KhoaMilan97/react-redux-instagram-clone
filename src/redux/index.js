@@ -8,6 +8,7 @@ import notifyReducer from "./reducer/notifyReducer";
 import postReducer from "./reducer/postReducer";
 import postDetailReducer from "./reducer/postDetailReducer";
 import chatReducer from "./reducer/chatReducer";
+import onlineReducer from "./reducer/onlineReducer";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   postReducer: postReducer,
   postDetail: postDetailReducer,
   chat: chatReducer,
+  online: onlineReducer,
 });
 
 export default rootReducer;

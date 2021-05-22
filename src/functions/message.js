@@ -14,9 +14,26 @@ export const getConservations = async (token) =>
     },
   });
 
-export const getMessages = async (id, token) =>
-  await axios.get(`/api/messages/${id}`, {
+export const getMessages = async (id, token, page) => {
+  return await axios.get(`/api/messages/${id}?limit=${page * 9}`, {
     headers: {
       Authorization: token,
     },
   });
+};
+
+export const deleteMessages = async (id, token) => {
+  return await axios.delete(`/api/messages/${id}`, {
+    headers: {
+      Authorization: token,
+    },
+  });
+};
+
+export const deleteConservation = async (id, token) => {
+  return await axios.delete(`/api/convervations/${id}`, {
+    headers: {
+      Authorization: token,
+    },
+  });
+};

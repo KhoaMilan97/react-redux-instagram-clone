@@ -12,7 +12,7 @@ import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { searchUser } from "../../functions/user";
 import UserCard from "../card/UserCard";
 import {
-  addUserAction,
+  chatTypes,
   getConservationAction,
 } from "../../redux/actions/chatAction";
 
@@ -35,7 +35,7 @@ function SearchUser() {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
 
-  const { auth, chat } = useSelector((state) => state);
+  const { auth, chat, online } = useSelector((state) => state);
   const dispatch = useDispatch();
   const searchRef = useRef();
   const history = useHistory();
@@ -74,7 +74,12 @@ function SearchUser() {
   const handleAddUser = (user) => {
     setSearch("");
     setUsers([]);
-    dispatch(addUserAction(user, chat));
+
+    dispatch({
+      type: chatTypes.ADD_USER,
+      payload: { ...user, text: "", media: [] },
+    });
+    dispatch({ type: chatTypes.CHECK_ONLINE_OFFLINE, payload: online });
     return history.push(`/messages/${user._id}`);
   };
 
@@ -87,6 +92,12 @@ function SearchUser() {
     if (chat.firstLoad) return;
     dispatch(getConservationAction(auth));
   }, [dispatch, auth, chat.firstLoad]);
+
+  useEffect(() => {
+    if (chat.firstLoad) {
+      dispatch({ type: chatTypes.CHECK_ONLINE_OFFLINE, payload: online });
+    }
+  }, [chat.firstLoad, dispatch, online]);
 
   return (
     <Grid container direction="column">

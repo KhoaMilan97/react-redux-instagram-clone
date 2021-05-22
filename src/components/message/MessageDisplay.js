@@ -1,16 +1,26 @@
-import React, { useEffect } from "react";
 import moment from "moment";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import Grid from "@material-ui/core/Grid";
 import Avatar from "@material-ui/core/Avatar";
 import Typography from "@material-ui/core/Typography";
 import GridList from "@material-ui/core/GridList";
 import GridListTile from "@material-ui/core/GridListTile";
-import GridListTileBar from "@material-ui/core/GridListTileBar";
-import CancelIcon from "@material-ui/icons/Cancel";
+// import GridListTileBar from "@material-ui/core/GridListTileBar";
+// import CancelIcon from "@material-ui/icons/Cancel";
 import { makeStyles } from "@material-ui/core/styles";
+import DeleteIcon from "@material-ui/icons/Delete";
+import Tooltip from "@material-ui/core/Tooltip";
+
+import { deleteMessageAction } from "../../redux/actions/chatAction";
+import ConfirmModal from "../modal/ConfirmModal";
 
 const useStyles = makeStyles((theme) => ({
+  messageRoot: {
+    padding: "5px 10px",
+    cursor: "pointer",
+  },
   time: {
     color: "#8e8e8e",
     fontSize: "12px",
@@ -23,6 +33,7 @@ const useStyles = makeStyles((theme) => ({
     height: 24,
     marginLeft: 5,
   },
+
   messageText: {
     border: "1px solid #eee",
     borderRadius: 22,
@@ -42,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
   },
   gridList: {
     width: "100%",
-    padding: "10px 15px",
+    padding: "10px 0px",
     height: "auto",
   },
   icon: {
@@ -51,18 +62,36 @@ const useStyles = makeStyles((theme) => ({
   titleBar: {
     background: "transparent",
   },
+  deleteIcon: {
+    display: "inline-block",
+    verticalAlign: "middle",
+
+    "&:hover": {
+      cursor: "pointer",
+    },
+  },
 }));
 
-function MessageDisplay({ user, msg, yourMessage }) {
+function MessageDisplay({ user, msg, yourMessage, data }) {
   const classes = useStyles(yourMessage);
+  const [show, setShow] = useState(false);
+  const { auth } = useSelector((state) => state);
+  const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
+
+  const handleDelete = () => {
+    dispatch(deleteMessageAction(msg, data, auth));
+  };
 
   return (
-    <Grid
-      container
-      style={{
-        padding: "20px 10px",
-      }}
-    >
+    <Grid container className={classes.messageRoot}>
+      <ConfirmModal
+        open={open}
+        setOpen={setOpen}
+        handleRemovePost={handleDelete}
+        title="Delete Message."
+        subtitle="Are you sure you want delete this message?"
+      />
       {!yourMessage && (
         <Grid
           item
@@ -72,21 +101,33 @@ function MessageDisplay({ user, msg, yourMessage }) {
           <Avatar src={user?.avatar?.url} className={classes.avatar} />
         </Grid>
       )}
-
       <Grid
         style={{ textAlign: yourMessage === true ? "right" : "left" }}
         item
         xs={yourMessage ? 12 : 10}
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
       >
+        {show && auth.user._id === user._id && (
+          <Tooltip title="Delete Messages?">
+            <DeleteIcon
+              onClick={() => setOpen(true)}
+              className={classes.deleteIcon}
+              color="secondary"
+            />
+          </Tooltip>
+        )}
         {msg.text && (
-          <Typography
-            className={classes.messageText}
-            style={{
-              backgroundColor: yourMessage ? "#efefef" : "#fff",
-            }}
-          >
-            {msg.text}
-          </Typography>
+          <>
+            <Typography
+              className={classes.messageText}
+              style={{
+                backgroundColor: yourMessage ? "#efefef" : "#fff",
+              }}
+            >
+              {msg.text}
+            </Typography>
+          </>
         )}
         {msg.media.length > 0 && (
           <>
@@ -97,7 +138,11 @@ function MessageDisplay({ user, msg, yourMessage }) {
                 cols={msg.media.length > 2 ? 3 : msg.media.length > 1 ? 2 : 1}
               >
                 {msg.media.map((image, index) => (
-                  <GridListTile key={index} cols={1}>
+                  <GridListTile
+                    style={{ borderRadius: 3 }}
+                    key={index}
+                    cols={1}
+                  >
                     <img
                       src={
                         image.camera
@@ -108,19 +153,6 @@ function MessageDisplay({ user, msg, yourMessage }) {
                       }
                       alt="Preview"
                     />
-                    {/* <GridListTileBar
-                      className={classes.titleBar}
-                      titlePosition="top"
-                      actionIcon={
-                        <IconButton
-                          onClick={() => handleRemoveImage(index)}
-                          className={classes.icon}
-                        >
-                          <CancelIcon />
-                        </IconButton>
-                      }
-                      actionPosition="right"
-                    /> */}
                   </GridListTile>
                 ))}
               </GridList>

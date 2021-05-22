@@ -128,7 +128,7 @@ export const getHomePostAction = (id, token, page) => async (dispatch) => {
       payload: {
         posts: res.data.posts,
         result: res.data.result,
-        hasMore: res.data.posts.length > 5,
+        hasMore: res.data.result > 5,
       },
     });
     dispatch({
