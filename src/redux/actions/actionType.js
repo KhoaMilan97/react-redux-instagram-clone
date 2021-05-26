@@ -26,4 +26,6 @@ export const actionTypes = {
   DELETE_ALL_NOTIFIES: "DELETE_ALL_NOTIFIES",
   STATUS: "STATUS",
   CHANGE_PAGE: "CHANGE_PAGE",
+  CALL: "CALL",
+  PEER: "PEER",
 };

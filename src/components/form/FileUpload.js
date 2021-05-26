@@ -24,10 +24,10 @@ export default function FileUpload({ setImages, images }) {
 
   const fileUploadAndResize = (e) => {
     const files = [...e.target.files];
-    console.log("what");
+
     let err = "";
     let newImages = [];
-    console.log(files);
+
     files.forEach((file) => {
       if (!file) return (err = "File doesn't exist");
       if (file.size > 1024 * 1024 * 5) {

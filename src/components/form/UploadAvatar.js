@@ -48,7 +48,6 @@ export default function UploadAvatar({ center, setImageLoading }) {
         (uri) => {
           upload({ image: uri, userid: user._id }, token)
             .then((res) => {
-              console.log("upload success", res.data);
               dispatch({
                 type: actionTypes.UPDATE_USER,
                 payload: res.data,

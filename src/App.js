@@ -2,6 +2,7 @@ import { Route, Switch, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
+import Peer from "peerjs";
 import Hidden from "@material-ui/core/Hidden";
 
 import Footer from "./components/Footer";
@@ -107,6 +108,15 @@ function App() {
 
     // At last, if the user has denied notifications, and you
     // want to be respectful there is no need to bother them any more.
+  }, []);
+
+  useEffect(() => {
+    const newPeer = new Peer(undefined, {
+      port: "3001",
+      host: "/",
+    });
+
+    dispatch({ type: actionTypes.PEER, payload: newPeer });
   }, []);
 
   if (pending) return <InstaLoading />;

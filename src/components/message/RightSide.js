@@ -35,6 +35,7 @@ import {
 import MessageDisplay from "./MessageDisplay";
 import EmojiIcon from "../EmojiIcon";
 import ConfirmModal from "../modal/ConfirmModal";
+import { actionTypes } from "../../redux/actions/actionType";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -78,7 +79,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function RightSide() {
-  const { auth, chat, socket } = useSelector((state) => state);
+  const { auth, chat, socket, peer } = useSelector((state) => state);
   const dispatch = useDispatch();
   const [user, setUser] = useState([]);
   const [images, setImages] = useState([]);
@@ -130,7 +131,6 @@ function RightSide() {
     if (id) {
       const getMessage = async () => {
         if (chat.data.every((item) => item._id !== id)) {
-          console.log("get data");
           await dispatch(getMessageAction(id, auth));
           setTimeout(() => {
             scrollToBottom();
@@ -202,9 +202,47 @@ function RightSide() {
     return history.push("/messages");
   };
 
-  const handleAudioCall = () => {};
+  // Call
+  const caller = ({ video }) => {
+    const { _id, avatar, username, fullname } = user;
 
-  const handleVideoCall = () => {};
+    const msg = {
+      sender: auth.user._id,
+      recipient: _id,
+      avatar,
+      username,
+      fullname,
+      video,
+    };
+
+    dispatch({ type: actionTypes.CALL, payload: msg });
+  };
+
+  const callUser = ({ video }) => {
+    const { _id, avatar, username, fullname } = auth.user;
+    const msg = {
+      sender: _id,
+      recipient: user._id,
+      avatar,
+      username,
+      fullname,
+      video,
+    };
+
+    if (peer.open) msg.peerId = peer._id;
+
+    socket.emit("callUser", msg);
+  };
+
+  const handleAudioCall = () => {
+    caller({ video: false });
+    callUser({ video: false });
+  };
+
+  const handleVideoCall = () => {
+    caller({ video: true });
+    callUser({ video: true });
+  };
 
   return (
     <Grid container direction="column" style={{ height: "100%" }}>

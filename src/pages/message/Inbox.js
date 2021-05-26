@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
@@ -8,8 +8,8 @@ import useMediaQuery from "@material-ui/core/useMediaQuery";
 
 import SearchUser from "../../components/message/SearchUser";
 
-import bgMessenger from "../../assets/img/messenger.png";
 import RightSide from "../../components/message/RightSide";
+import CallModal from "../../components/message/CallModal";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -32,6 +32,7 @@ function Inbox() {
 
   return (
     <Container maxWidth="md">
+      <CallModal />
       <Grid className={classes.root} container>
         <Grid className={classes.leftSide} item xs={matchesXS ? 3 : 4}>
           <SearchUser />

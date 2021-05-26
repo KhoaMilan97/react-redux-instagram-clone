@@ -4,6 +4,7 @@ import { actionTypes } from "./redux/actions/actionType";
 import { chatTypes } from "./redux/actions/chatAction";
 
 import audioBell from "./audio/unconvinced-569.mp3";
+import { setMessage } from "./redux/actions/messageAction";
 
 var notification;
 
@@ -22,14 +23,13 @@ const spawnNotification = (body, icon, url, title) => {
 };
 
 function SocketClient() {
-  const { auth, socket, notify, online } = useSelector((state) => state);
+  const { auth, socket, notify, online, call } = useSelector((state) => state);
   const dispatch = useDispatch();
   const audioRef = useRef();
 
   useEffect(() => {
     const closeEvent = () => {
       if (window.visibilityState === "visible") {
-        console.log("heheh");
         // The tab has become visible so clear the now-stale Notification.
         notification.close();
       }
@@ -91,7 +91,6 @@ function SocketClient() {
     socket.on("createNotifyToClient", (msg) => {
       dispatch({ type: actionTypes.CREATE_NOTIFY, payload: msg });
       if (notify.sound) {
-        console.log("Yes play");
         audioRef.current.play();
       }
       spawnNotification(
@@ -156,7 +155,6 @@ function SocketClient() {
   }, [dispatch, socket, online]);
 
   // Check user offline
-
   useEffect(() => {
     socket.on("checkUserOffline", (id) => {
       dispatch({
@@ -166,6 +164,24 @@ function SocketClient() {
     });
     return () => socket.off("checkUserOffline");
   }, [dispatch, socket, online]);
+
+  // Call user
+  useEffect(() => {
+    socket.on("callUserToClient", (data) => {
+      dispatch({
+        type: actionTypes.CALL,
+        payload: data,
+      });
+    });
+    return () => socket.off("callUserToClient");
+  }, [dispatch, socket]);
+
+  useEffect(() => {
+    socket.on("userBusy", (data) => {
+      dispatch(setMessage(`${call.username} is busy!`, "info"));
+    });
+    return () => socket.off("userBusy");
+  }, [dispatch, socket, call]);
 
   return (
     <audio controls={true} ref={audioRef} style={{ display: "none" }}>
