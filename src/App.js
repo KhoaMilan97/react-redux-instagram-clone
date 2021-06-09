@@ -36,6 +36,7 @@ import { checkCurrentUser } from "./redux/actions/authAction";
 import { setMessage } from "./redux/actions/messageAction";
 import { getNotifyAction } from "./redux/actions/notifyAction";
 import ScrollToTop from "./utils/ScrollToTop";
+import CallModal from "./components/message/CallModal";
 
 function App() {
   const { pathname } = useLocation();
@@ -105,19 +106,16 @@ function App() {
         }
       });
     }
-
-    // At last, if the user has denied notifications, and you
-    // want to be respectful there is no need to bother them any more.
   }, []);
 
   useEffect(() => {
     const newPeer = new Peer(undefined, {
-      port: "3001",
-      host: "/",
+      path: "/",
+      secure: true,
     });
 
     dispatch({ type: actionTypes.PEER, payload: newPeer });
-  }, []);
+  }, [dispatch]);
 
   if (pending) return <InstaLoading />;
 
@@ -125,6 +123,7 @@ function App() {
     <>
       {!hide && <Header />}
       <Message />
+      <CallModal />
       {auth.token && <SocketClient />}
       <ScrollToTop />
       <Switch>

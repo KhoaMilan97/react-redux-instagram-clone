@@ -82,7 +82,7 @@ function CommentItem({ comment, post, nested, children }) {
 
   const classes = useStyles();
   const auth = useSelector((state) => state.auth);
-  const { user, token } = auth;
+  const { user } = auth;
   const dispatch = useDispatch();
 
   useEffect(() => {

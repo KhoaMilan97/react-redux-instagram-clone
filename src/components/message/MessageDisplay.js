@@ -12,9 +12,16 @@ import GridListTile from "@material-ui/core/GridListTile";
 import { makeStyles } from "@material-ui/core/styles";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Tooltip from "@material-ui/core/Tooltip";
+import Button from "@material-ui/core/Button";
+
+import VideocamOffIcon from "@material-ui/icons/VideocamOff";
+import PhoneCallbackIcon from "@material-ui/icons/PhoneCallback";
+import VideocamIcon from "@material-ui/icons/Videocam";
+import CallIcon from "@material-ui/icons/Call";
 
 import { deleteMessageAction } from "../../redux/actions/chatAction";
 import ConfirmModal from "../modal/ConfirmModal";
+import Times from "./Times";
 
 const useStyles = makeStyles((theme) => ({
   messageRoot: {
@@ -50,6 +57,8 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "space-around",
     overflow: "hidden",
     backgroundColor: theme.palette.background.paper,
+    width: "90%",
+    marginLeft: "auto",
   },
   gridList: {
     width: "100%",
@@ -69,6 +78,12 @@ const useStyles = makeStyles((theme) => ({
     "&:hover": {
       cursor: "pointer",
     },
+  },
+  button: {
+    textTransform: "capitalize",
+    borderRadius: 22,
+    padding: 16,
+    fontWeight: "normal",
   },
 }));
 
@@ -157,6 +172,44 @@ function MessageDisplay({ user, msg, yourMessage, data }) {
                 ))}
               </GridList>
             </div>
+          </>
+        )}
+        {msg.call && (
+          <>
+            <Button
+              size="large"
+              disableElevation
+              style={{
+                backgroundColor: yourMessage ? "#efefef" : "#fff",
+                border: yourMessage ? undefined : "1px solid #eee",
+              }}
+              startIcon={
+                msg.call.times === 0 ? (
+                  msg.call.video ? (
+                    <VideocamOffIcon color="error" />
+                  ) : (
+                    <PhoneCallbackIcon color="error" />
+                  )
+                ) : msg.call.video ? (
+                  <VideocamIcon color="primary" />
+                ) : (
+                  <CallIcon color="primary" />
+                )
+              }
+              variant="contained"
+              className={classes.button}
+            >
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {msg.call.video ? "Video Call" : "Audio Call"}
+                <small style={{ fontSize: 12 }}>
+                  {msg.call.times > 0 ? (
+                    <Times total={msg.call.times} />
+                  ) : (
+                    new Date(msg.createdAt).toLocaleTimeString()
+                  )}
+                </small>
+              </div>
+            </Button>
           </>
         )}
         <Typography className={classes.time}>

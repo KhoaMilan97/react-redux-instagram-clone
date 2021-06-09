@@ -57,6 +57,7 @@ export const getConservationAction = (auth) => async (dispatch) => {
             ...item,
             text: conservation.text,
             media: conservation.media,
+            call: conservation.call,
           });
         }
       });

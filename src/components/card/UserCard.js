@@ -9,6 +9,11 @@ import Avatar from "@material-ui/core/Avatar";
 import Badge from "@material-ui/core/Badge";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
 
+import VideocamOffIcon from "@material-ui/icons/VideocamOff";
+import PhoneCallbackIcon from "@material-ui/icons/PhoneCallback";
+import VideocamIcon from "@material-ui/icons/Videocam";
+import CallIcon from "@material-ui/icons/Call";
+
 const StyledBadge = withStyles((theme) => ({
   badge: {
     backgroundColor: "#44b700",
@@ -71,6 +76,19 @@ function UserCard(props) {
       if (user.media?.length > 1)
         return `You sent ${user.media?.length} photos.`;
       return `You sent a photo.`;
+    }
+    if (user.call) {
+      return user.call.times === 0 ? (
+        user.call.video ? (
+          <VideocamOffIcon fontSize="small" color="secondary" />
+        ) : (
+          <PhoneCallbackIcon fontSize="small" color="secondary" />
+        )
+      ) : user.call.video ? (
+        <VideocamIcon fontSize="small" />
+      ) : (
+        <CallIcon fontSize="small" />
+      );
     }
     return user.fullname;
   };

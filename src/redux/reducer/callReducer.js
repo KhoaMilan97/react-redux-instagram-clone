@@ -1,8 +1,6 @@
 import { actionTypes } from "../actions/actionType";
 
-const initialState = null;
-
-const callReducer = (state = initialState, action) => {
+const callReducer = (state = null, action) => {
   switch (action.type) {
     case actionTypes.CALL:
       return action.payload;

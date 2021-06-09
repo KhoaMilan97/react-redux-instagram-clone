@@ -474,7 +474,7 @@ const Header = () => {
                     aria-haspopup="true"
                   >
                     <Badge badgeContent={notifyUnRead} color="error">
-                      {notify.length > 0 ? (
+                      {notify.length > 0 && active === 4 ? (
                         <FavoriteIcon />
                       ) : (
                         <FavoriteBorderOutlinedIcon />

@@ -5,7 +5,6 @@ import Grow from "@material-ui/core/Grow";
 import Paper from "@material-ui/core/Paper";
 import Popper from "@material-ui/core/Popper";
 import MenuList from "@material-ui/core/MenuList";
-import Menu from "@material-ui/core/Menu";
 import InsertEmoticonIcon from "@material-ui/icons/InsertEmoticon";
 import Tooltip from "@material-ui/core/Tooltip";
 import { makeStyles } from "@material-ui/core/styles";
