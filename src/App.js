@@ -3,11 +3,14 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
 import Peer from "peerjs";
+import axios from "axios";
+
 import Hidden from "@material-ui/core/Hidden";
 
 import Footer from "./components/Footer";
 import Header from "./components/header/Header";
 import InstaLoading from "./components/loading/InstaLoading";
+import CallModal from "./components/message/CallModal";
 
 import NotFound from "./pages/NotFound";
 import Accounts from "./pages/Accounts";
@@ -27,6 +30,7 @@ import PrivateRoute from "./utils/privateRoute";
 import UserRoute from "./utils/userRoute";
 import Message from "./utils/Message";
 import ToolBarMargin from "./utils/ToolBarMargin";
+import ScrollToTop from "./utils/ScrollToTop";
 
 import { getAccessToken } from "./functions/auth";
 import SocketClient from "./SocketClient";
@@ -35,8 +39,8 @@ import { actionTypes } from "./redux/actions/actionType";
 import { checkCurrentUser } from "./redux/actions/authAction";
 import { setMessage } from "./redux/actions/messageAction";
 import { getNotifyAction } from "./redux/actions/notifyAction";
-import ScrollToTop from "./utils/ScrollToTop";
-import CallModal from "./components/message/CallModal";
+
+axios.defaults.url = "https://instagram-clone-api-v1.herokuapp.com/";
 
 function App() {
   const { pathname } = useLocation();
