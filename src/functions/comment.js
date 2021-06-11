@@ -1,5 +1,7 @@
 import axios from "axios";
 
+axios.defaults.baseURL = "https://instagram-clone-api-v1.herokuapp.com";
+
 export const createComment = async (data, token) =>
   await axios.post(`/api/create-comment`, data, {
     headers: { Authorization: token },

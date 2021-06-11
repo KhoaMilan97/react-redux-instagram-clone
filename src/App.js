@@ -40,7 +40,7 @@ import { checkCurrentUser } from "./redux/actions/authAction";
 import { setMessage } from "./redux/actions/messageAction";
 import { getNotifyAction } from "./redux/actions/notifyAction";
 
-axios.defaults.url = "https://instagram-clone-api-v1.herokuapp.com/";
+axios.defaults.baseURL = "https://instagram-clone-api-v1.herokuapp.com";
 
 function App() {
   const { pathname } = useLocation();

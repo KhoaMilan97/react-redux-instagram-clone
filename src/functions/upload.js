@@ -1,4 +1,5 @@
 import axios from "axios";
+axios.defaults.baseURL = "https://instagram-clone-api-v1.herokuapp.com";
 
 export const upload = async (data, token) =>
   await axios.post(

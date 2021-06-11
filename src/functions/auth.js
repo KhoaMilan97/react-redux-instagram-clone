@@ -1,5 +1,7 @@
 import axios from "axios";
 
+axios.defaults.baseURL = "https://instagram-clone-api-v1.herokuapp.com";
+
 export const login = async (user) => await axios.post(`/api/login`, user);
 export const register = async (user) => await axios.post(`/api/register`, user);
 export const logout = async () => await axios.get(`/api/logout`);
