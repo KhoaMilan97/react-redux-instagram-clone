@@ -1,25 +1,24 @@
-import axios from "axios";
-axios.defaults.baseURL = "https://instagram-clone-api-v1.herokuapp.com";
+import { API } from "../api";
 
 export const searchUser = async (search, token) =>
-  await axios.get(`/api/search?s=${search}`, {
+  await API.get(`/api/search?s=${search}`, {
     headers: {
       Authorization: token,
     },
   });
 
 export const getUser = async (username) =>
-  await axios.get(`/api/user-info/${username}`);
+  await API.get(`/api/user-info/${username}`);
 
 export const updateUser = async (data, id, token) =>
-  await axios.patch(`/api/update-user/${id}`, data, {
+  await API.patch(`/api/update-user/${id}`, data, {
     headers: {
       Authorization: token,
     },
   });
 
 export const followUser = async (followId, token) =>
-  await axios.put(
+  await API.put(
     "/api/user/follow",
     { followId },
     {
@@ -30,7 +29,7 @@ export const followUser = async (followId, token) =>
   );
 
 export const unfollowUser = async (followId, token) =>
-  await axios.put(
+  await API.put(
     "/api/user/unfollow",
     { followId },
     {
@@ -41,7 +40,7 @@ export const unfollowUser = async (followId, token) =>
   );
 
 export const savedPost = async (postId, userId, token) =>
-  await axios.patch(
+  await API.patch(
     `/api/saved/${userId}`,
     { id: postId },
     {
@@ -52,7 +51,7 @@ export const savedPost = async (postId, userId, token) =>
   );
 
 export const unsavedPost = async (postId, userId, token) =>
-  await axios.patch(
+  await API.patch(
     `/api/un-saved/${userId}`,
     { id: postId },
     {
@@ -63,14 +62,14 @@ export const unsavedPost = async (postId, userId, token) =>
   );
 
 export const suggestUser = async (userId, token) =>
-  await axios.get(`/api/suggest-user/${userId}`, {
+  await API.get(`/api/suggest-user/${userId}`, {
     headers: {
       Authorization: token,
     },
   });
 
 export const getSavedPosts = async (username, token) =>
-  await axios.get(`/api/get-saved-post/${username}`, {
+  await API.get(`/api/get-saved-post/${username}`, {
     headers: {
       Authorization: token,
     },

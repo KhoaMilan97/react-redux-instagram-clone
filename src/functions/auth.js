@@ -1,18 +1,16 @@
-import axios from "axios";
+import { API } from "../api";
 
-axios.defaults.baseURL = "https://instagram-clone-api-v1.herokuapp.com";
-
-export const login = async (user) => await axios.post(`/api/login`, user);
-export const register = async (user) => await axios.post(`/api/register`, user);
-export const logout = async () => await axios.get(`/api/logout`);
+export const login = async (user) => await API.post(`/api/login`, user);
+export const register = async (user) => await API.post(`/api/register`, user);
+export const logout = async () => await API.get(`/api/logout`);
 export const getAccessToken = async () =>
-  await axios.post("/api/refresh-token", {});
+  await API.post("/api/refresh-token", {});
 
 export const forgotPassword = async (email) =>
-  await axios.post("/api/forgot-password", { email });
+  await API.post("/api/forgot-password", { email });
 
 export const resetPassword = async (password, token) =>
-  await axios.post(
+  await API.post(
     "/api/reset-password",
     { password },
     {
@@ -23,4 +21,4 @@ export const resetPassword = async (password, token) =>
   );
 
 export const checkOldPassword = async (email, password) =>
-  await axios.post("/api/check-old-password", { email, password });
+  await API.post("/api/check-old-password", { email, password });

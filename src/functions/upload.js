@@ -1,8 +1,7 @@
-import axios from "axios";
-axios.defaults.baseURL = "https://instagram-clone-api-v1.herokuapp.com";
+import { API } from "../api";
 
 export const upload = async (data, token) =>
-  await axios.post(
+  await API.post(
     `/api/uploadavatars`,
     { image: data.image, userid: data.userid },
     {
@@ -13,7 +12,7 @@ export const upload = async (data, token) =>
   );
 
 export const removeAvatars = async (data, token) =>
-  await axios.post(
+  await API.post(
     `/api/removeavatars`,
     { public_id: data.public_id, userid: data.userid },
     {
@@ -24,7 +23,7 @@ export const removeAvatars = async (data, token) =>
   );
 
 export const uploadImages = async (data, token) =>
-  await axios.post(
+  await API.post(
     `/api/upload`,
     {
       image: data.image,
@@ -35,7 +34,7 @@ export const uploadImages = async (data, token) =>
   );
 
 export const removeImages = async (data, token) =>
-  await axios.post(
+  await API.post(
     `/api/remove`,
     { public_id: data.public_id },
     {

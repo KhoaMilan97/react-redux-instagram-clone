@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
 import Peer from "peerjs";
-import axios from "axios";
 
 import Hidden from "@material-ui/core/Hidden";
 
@@ -39,8 +38,6 @@ import { actionTypes } from "./redux/actions/actionType";
 import { checkCurrentUser } from "./redux/actions/authAction";
 import { setMessage } from "./redux/actions/messageAction";
 import { getNotifyAction } from "./redux/actions/notifyAction";
-
-axios.defaults.baseURL = "https://instagram-clone-api-v1.herokuapp.com";
 
 function App() {
   const { pathname } = useLocation();
